@@ -1,0 +1,15 @@
+.offer-monitoring :is(.inventory-page:has(>.collection-empty),.offers-page:has(.collection-empty)):not([hidden]){display:flex;flex-direction:column;min-height:calc(100dvh - 165px)}
+.offer-monitoring .offers-page:has(.collection-empty)>.offer-studio{display:flex;flex-direction:column;flex:1;min-height:0;width:100%}
+.collection-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:0;margin:0;padding:28px 16px;text-align:center;color:var(--muted,#96969e)}
+.collection-empty-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:15px}
+.collection-empty-illustration{position:absolute;bottom:calc(100% + 36px);left:50%;transform:translateX(-50%)}
+.collection-empty-illustration .studio-empty-art{margin-bottom:0}
+.collection-empty-content>h1{margin:0;font-size:24px;font-weight:450;letter-spacing:-.5px;line-height:1.1;color:#d2d2d8}
+.collection-empty-content>p{margin:0;max-width:390px;min-height:3.4em;font-size:14px;line-height:1.7}
+@media(max-width:760px){
+ .offer-monitoring.native-workspace :is(.inventory-page:has(>.collection-empty),.offers-page:has(.collection-empty)){min-height:0}
+ /* Inventory includes a 10px leading grid margin, even when the grid is empty. */
+ .offer-monitoring.native-workspace .offers-page:has(.collection-empty){padding-top:calc(84px + env(safe-area-inset-top,0px))}
+ .collection-empty-content>h1{font-size:31px;letter-spacing:-1.2px;font-weight:500;color:#c7c7d1}
+ .collection-empty-content>p{font-size:13px}
+}

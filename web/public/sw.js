@@ -1,0 +1,4 @@
+const CACHE='resell-images-v1';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('maison-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.destination!=='image'||!['i.simpalsmedia.com'].includes(url.hostname))return;event.respondWith(caches.open(CACHE).then(async cache=>{const saved=await cache.match(event.request);if(saved)return saved;const response=await fetch(event.request);if(response.ok){await cache.put(event.request,response.clone());const keys=await cache.keys();await Promise.all(keys.slice(0,Math.max(0,keys.length-150)).map(key=>cache.delete(key)));}return response;}));});

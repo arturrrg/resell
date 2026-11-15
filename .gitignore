@@ -1,0 +1,28 @@
+node_modules/
+web/dist/
+src-tauri/target/
+src-tauri/gen/
+src-tauri/android/
+src-tauri/ios/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+.vercel
+.env*
+.server-test-*/
+src-tauri/offer-sandbox-assets/
+web/offer-dist/
+.native-tools/
+tests/.live-workspace-cleanup.sql
+!.env.example
+
+# Local application review artifacts
+/artifacts/
+# Prevent loose screenshots and old output folders returning
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp

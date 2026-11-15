@@ -1,0 +1,11 @@
+# Optional: requires custom SMTP or a plan supporting template customization.
+# These are prepared settings, not active production configuration.
+[auth.email]
+otp_length = 8
+otp_expiry = 600
+[auth.email.template.email_change]
+subject = "Your Resell verification code"
+content_path = "./supabase/templates/verification.html"
+[auth.email.template.confirmation]
+subject = "Your Resell verification code"
+content_path = "./supabase/templates/verification.html"

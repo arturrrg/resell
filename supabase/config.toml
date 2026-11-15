@@ -1,0 +1,10 @@
+project_id = "maison-native-platform"
+
+[auth]
+enable_anonymous_sign_ins = true
+enable_manual_linking = true
+site_url = "https://resell-workspace.vercel.app"
+additional_redirect_urls = ["https://resell-workspace.vercel.app", "https://maison-native-platform.vercel.app", "http://localhost:1420", "https://maison-native-platform-arturrrgs-projects.vercel.app"]
+
+[auth.email]
+enable_confirmations = true

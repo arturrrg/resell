@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "web/dist",
+  "installCommand": "npm ci",
+  "functions": {
+    "api/import-999.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": [
+    "fra1"
+  ]
+}

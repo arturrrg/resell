@@ -1,0 +1,28 @@
+[package]
+name = "resell"
+version = "1.6.48"
+description = "Resell private reseller workspace"
+authors = ["Resell"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "resell_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[features]
+default = []
+offer-sandbox = []
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+url = "2"
+
+tauri-plugin-opener = "2"
+resell-marketplace-plugin = { package = "tauri-plugin-marketplace", path = "../native-offer/marketplace-plugin" }

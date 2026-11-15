@@ -1,0 +1,7 @@
+.offer-photo-sources{overflow:hidden;border-radius:18px;background:#ffffff06}
+.offer-photo-sources>button{display:flex;align-items:center;gap:14px;width:100%;min-height:62px;padding:16px 18px;border:0;border-radius:0;background:transparent;text-align:left;font:inherit;color:#eeeef4}
+.offer-photo-sources>button+button{border-top:1px solid #ffffff0a}
+.offer-photo-sources>button>svg{width:23px;height:23px;stroke-width:1.6;color:#b1b1bb}
+.offer-photo-sources>button>span{flex:1;font-size:15px}
+.offer-photo-sources>button>svg:last-child{width:16px;height:16px;color:#71717c}
+.offer-photo-sources>button:active{background:#ffffff08}

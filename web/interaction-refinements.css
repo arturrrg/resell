@@ -1,0 +1,757 @@
+/* Kept pages preserve their images, position and controls across workspace tabs. */
+[hidden] {
+  display: none !important;
+}
+.workspace-page:not([hidden]) {
+  animation: workspace-enter 0.15s ease-out;
+}
+@keyframes workspace-enter {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.nav-command-icon:active {
+  transform: none;
+}
+.native-carousel {
+  touch-action: pan-x pan-y;
+  scroll-behavior: auto;
+}
+.native-carousel .swipe-page {
+  scroll-snap-stop: always;
+}
+.gallery-photo { display:block;width:100%;height:100%;position:relative; }
+.gallery-photo>.gallery-original { position:absolute;inset:0;transition:opacity .1s; }
+.viewer-swipe .gallery-photo>img { width:100%;height:100%;object-fit:cover; }
+.native-carousel .media-open {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  flex: none;
+  border-radius: 0;
+}
+.native-carousel .media-open img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.native-carousel .swipe-page[aria-hidden="true"] {
+  pointer-events: none;
+}
+.native-carousel:is(.is-dragging,.is-button-animating) {
+  scroll-snap-type: none;
+}
+.studio-preview-gallery .native-carousel .media-open img {
+  object-fit: cover;
+}
+.studio-tab-panel:not([hidden]) {
+  animation: workspace-enter 0.15s ease-out;
+}
+.studio-tab-panel {
+  min-width: 0;
+}
+.studio-editor-content {
+  animation: none !important;
+}
+.source-diagnostics {
+  max-width: 440px;
+}
+.source-diagnostic-title {
+  font-size: 18px;
+  font-weight: 550;
+  letter-spacing: -0.4px;
+}
+.source-diagnostic-error {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c5b59b;
+  overflow-wrap: anywhere;
+}
+.source-diagnostics dl {
+  margin: 24px 0;
+}
+.source-diagnostics dl > div {
+  padding: 12px 0;
+  border-bottom: 1px solid #ffffff0a;
+}
+.source-diagnostics dt {
+  font-size: 10px;
+  color: #93939f;
+  margin-bottom: 5px;
+}
+.source-diagnostics dd {
+  margin: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.source-diagnostics .sheet-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 11px;
+}
+.source-diagnostics .sheet-note svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 4px;
+}
+.source-diagnostics .account-primary {
+  width: 100%;
+}
+
+/* Sales: compact commerce metrics, a quiet green series, and a readable ledger. */
+.sales-dashboard {
+  background: #131416;
+  max-width: 760px;
+  padding: 26px;
+}
+.sales-dashboard .sheet-heading {
+  margin-bottom: 18px;
+}
+.sales-dashboard .sheet-heading h2 {
+  font-size: 20px;
+  letter-spacing: -0.6px;
+}
+.sales-period {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid #ffffff0a;
+  border-radius: 12px;
+  width: max-content;
+  background: #0d0e10;
+  margin-bottom: 26px;
+}
+.sales-period button {
+  min-height: 30px;
+  min-width: 0;
+  padding: 5px 13px;
+  border-radius: 9px;
+  font-size: 11px;
+  color: #83888a;
+}
+.sales-period button[aria-pressed="true"] {
+  background: #2b2e30;
+  color: #f4f5f6;
+  box-shadow: 0 1px 3px #0003;
+}
+.sales-hero {
+  padding: 0 2px 25px;
+}
+.sales-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #b1b9b4;
+}
+.sales-live-dot {
+  width: 6px;
+  height: 6px;
+  background: #a5cdb6;
+  border-radius: 50%;
+}
+.sales-total {
+  font-size: 53px;
+  letter-spacing: -2.6px;
+  line-height: 1.25;
+  font-weight: 550;
+  margin: 8px 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.sales-total > span {
+  font-size: 14px;
+  letter-spacing: 0;
+  color: #7d8981;
+  font-weight: 450;
+}
+.sales-hero-note {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: #7f9387;
+  font-size: 10px;
+}
+.sales-hero-note svg {
+  width: 13px;
+  height: 13px;
+}
+.sales-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #ffffff0b;
+  border-bottom: 1px solid #ffffff0b;
+  padding: 17px 0;
+  margin-bottom: 24px;
+}
+.sales-metrics > div {
+  padding: 0 17px;
+  border-right: 1px solid #ffffff0a;
+  min-width: 0;
+}
+.sales-metrics > div:first-child {
+  padding-left: 2px;
+}
+.sales-metrics > div:last-child {
+  border: 0;
+  padding-right: 0;
+}
+.sales-metrics span {
+  font-size: 10px;
+  color: #858e88;
+  display: block;
+  margin-bottom: 9px;
+  white-space: nowrap;
+}
+.sales-metrics strong {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 23px;
+  letter-spacing: -0.7px;
+  font-weight: 500;
+}
+.sales-metrics strong svg {
+  width: 14px;
+  height: 14px;
+  align-self: center;
+  color: #5e6e64;
+  margin-left: 4px;
+}
+.sales-metrics small {
+  font-size: 9px;
+  color: #76867c;
+  letter-spacing: 0;
+}
+.sales-trend {
+  background: #101412;
+  border: 1px solid #ffffff08;
+  border-radius: 17px;
+  padding: 17px 17px 13px;
+}
+.sales-trend > header {
+  position: static;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  gap: 10px;
+}
+.sales-trend h3 {
+  font-size: 12px;
+  margin: 0 0 6px;
+  font-weight: 500;
+  color: #d1d8d4;
+}
+.sales-trend header span {
+  color: #708077;
+  font-size: 10px;
+}
+.sales-trend header strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #a1b6a8;
+}
+.sales-plot {
+  position: relative;
+  margin: 12px -5px 0;
+}
+.sales-plot > svg {
+  width: 100%;
+  height: 170px;
+  display: block;
+  overflow: visible;
+  stroke-width: initial;
+}
+.sales-plot-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.sales-plot-empty span {
+  color: #7c8a81;
+  font-size: 11px;
+  background: #101412d9;
+  padding: 10px;
+}
+.sales-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  color: #607366;
+  font-size: 9px;
+  padding: 0 3px;
+}
+.sales-ledger-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 26px 0 9px;
+}
+.sales-ledger-title h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 550;
+}
+.sales-ledger-title > span {
+  font-size: 10px;
+  color: #7b8380;
+}
+.sales-ledger-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid #ffffff09;
+}
+.sales-device-icon {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #a0c9ad0a;
+  color: #8da999;
+  flex: none;
+}
+.sales-device-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.sales-device-name {
+  flex: 1;
+  min-width: 0;
+}
+.sales-device-name strong {
+  font-size: 12px;
+  font-weight: 500;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sales-device-name span {
+  display: block;
+  font-size: 9px;
+  color: #7f8883;
+  margin-top: 5px;
+}
+.sales-ledger-profit {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #c4d7cb;
+  text-align: right;
+}
+.sales-ledger-profit small {
+  display: block;
+  margin-top: 3px;
+  font-size: 8px;
+  font-weight: 400;
+  color: #7c8e83;
+}
+.sales-return {
+  width: 30px;
+  height: 34px;
+  min-width: 30px;
+  min-height: 34px;
+  border-radius: 10px;
+  color: #737d77;
+}
+.sales-return svg {
+  width: 15px;
+  height: 15px;
+}
+.sales-ledger-empty {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #737d78;
+  margin: 18px 0 2px;
+}
+@media (max-width: 760px) {
+  .resell-app .app-tabbar {
+    max-width: 280px;
+    width: calc(100% - 104px);
+    padding: 5px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .resell-app>.floating-nav .nav-command-icon { width:26px;min-width:26px;height:28px;min-height:28px;border-radius:9px; }
+  .resell-app>.floating-nav .nav-command-icon svg { width:18px;height:18px; }
+  .app-tabbar .app-destination,
+  .app-tabbar .app-destination-wrap {
+    height: 43px;
+  }
+  .app-tabbar .app-destination {
+    gap: 3px;
+    font-size: 8px;
+  }
+  .app-tabbar .app-destination > svg,
+  .app-tabbar .app-destination-wrap > .tool-trigger svg,
+  .app-tabbar .account-trigger svg {
+    width: 20px;
+    height: 20px;
+  }
+  .app-tabbar .app-destination-wrap > span {
+    bottom: 5px;
+    font-size: 8px;
+  }
+  .app-tabbar .app-destination-wrap > .tool-trigger,
+  .app-tabbar .account-trigger {
+    padding-top: 5px;
+  }
+  .app-tabbar .nav-selection {
+    left: 5px;
+    top: 5px;
+    bottom: 5px;
+    width: calc((100% - 10px) / 4);
+  }
+  .resell-app[data-page="offers"] {
+    padding-top: calc(5px + env(safe-area-inset-top, 0px));
+  }
+  .resell-app .offer-studio {
+    padding-top: 2px;
+  }
+  .resell-app .offer-studio .studio-page-title { margin:12px 0 22px; }
+  .resell-app .card-body footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 34px 34px;
+    column-gap: 4px;
+    row-gap: 5px;
+    padding-top: 8px;
+  }
+  .resell-app .card-body footer .source-meta {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .resell-app .card-body footer .seller-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+  .resell-app .card-body footer > .source-status {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .resell-app .card-body footer > button[aria-label="Delete device"] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .resell-app .card-body footer > button {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+  .resell-app .card-body footer > button svg {
+    width: 18px;
+    height: 18px;
+  }
+  .resell-app .card-body footer .card-commerce {
+    grid-column: 1/3;
+    grid-row: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .resell-app .card-body footer:has(.source-meta) .card-commerce {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .resell-app .profit-inline {
+    flex: 1;
+    max-width: 160px;
+    min-width: 0;
+    padding: 4px 8px;
+    height: 33px;
+  }
+  .resell-app .profit-inline label {
+    min-width: 0;
+  }
+  .resell-app .profit-inline input {
+    width: 100%;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .resell-app .profit-editor-icon {
+    width: 18px;
+  }
+  .resell-app .sale-trigger {
+    min-height: 33px;
+    padding: 6px 8px;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .resell-app .card-commerce .sale-trigger svg {
+    width: 14px;
+    height: 14px;
+  }
+  .sales-dashboard.workspace-sheet {
+    padding: 23px 19px 22px;
+    background: #131416;
+  }
+  .sales-dashboard .sheet-heading {
+    margin-bottom: 17px;
+  }
+  .sales-dashboard .sales-period {
+    margin-bottom: 22px;
+  }
+  .sales-dashboard .sales-metrics > div {
+    padding: 0 10px;
+  }
+  .sales-dashboard .sales-metrics > div:first-child {
+    padding-left: 2px;
+  }
+  .sales-dashboard .sales-metrics strong {
+    font-size: 20px;
+  }
+  .sales-dashboard .sales-metrics span {
+    font-size: 9px;
+  }
+  .sales-dashboard .sales-trend {
+    padding: 15px 12px 12px;
+  }
+  .sales-dashboard .sales-total {
+    font-size: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-page:not([hidden]),
+  .studio-tab-panel:not([hidden]) {
+    animation: none;
+  }
+}
+
+/* One surface for the floating toolbar, without separate dark input islands. */
+.resell-app>.floating-nav>.nav-import,
+.resell-app>.floating-nav>.search-field,
+.resell-app>.floating-nav .filter-trigger {
+  background:transparent !important;
+  border-color:transparent;
+  box-shadow:none;
+}
+.resell-app>.floating-nav .filter-trigger.filters-active { border-color:#b6b6c0; }
+@media(max-width:760px) {
+  .resell-app .app-tabbar { max-width:332px;width:calc(100% - 56px); }
+  .resell-app>.floating-nav>.nav-import,.resell-app>.floating-nav>.search-field { height:36px; }
+  .resell-app>.floating-nav .filter-trigger { width:36px;min-width:36px;height:36px;min-height:36px; }
+  .resell-app>.floating-nav .nav-command-icon { width:30px;min-width:30px;height:32px;min-height:32px; }
+}
+
+/* Keep scroll boundaries still; only actual content scrolls. */
+html,body,#root { overscroll-behavior:none; }
+body .studio-scroll,body .workspace-sheet,body .native-carousel,body .studio-picker-options,
+body .description,body .characteristics-list { overscroll-behavior:none; }
+.profit-crosshair { will-change:transform; }
+.sales-plot>svg { user-select:none;-webkit-user-select:none; }
+/* Opacity compositing of an entire photo-heavy page costs more than showing its retained content. */
+.workspace-page:not([hidden]),.studio-tab-panel:not([hidden]) { animation:none; }
+
+/* Small-screen controls keep their surfaces without repeatedly filtering the page below. */
+@media(max-width:760px) {
+  *,*::before,*::after,dialog::backdrop {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  .workspace-sheet::backdrop,.media-dialog::backdrop { background:#000c; }
+  .workspace-sheet,.media-dialog { box-shadow:0 12px 30px #0006; }
+  .viewer-swipe .media-backdrop { display:none; }
+}
+.sales-plot>svg { outline:none; }
+.sales-plot>svg:focus-visible { outline:1px solid #ffffff40;outline-offset:3px;border-radius:10px; }
+
+/* Each mobile workspace keeps its own scroll tree. No display:none swap during a pan. */
+@media(max-width:760px){
+ main.resell-app.native-workspace{position:fixed;inset:0;max-width:none;width:100%;height:100dvh;min-height:0;padding:0;overflow:hidden;}
+ .native-workspace>.workspace-pager{position:absolute;inset:0;display:flex;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:none;scrollbar-width:none;touch-action:pan-x pan-y;}
+ .workspace-pager::-webkit-scrollbar{display:none;}
+ .native-workspace>.workspace-pager.is-dragging{scroll-snap-type:none;}
+ .native-workspace .workspace-page{flex:0 0 100%;width:100%;height:100%;min-width:0;overflow-y:auto;overflow-x:hidden;scroll-snap-align:start;scroll-snap-stop:always;overscroll-behavior:none;padding:5px 18px calc(105px + env(safe-area-inset-bottom,0px));}
+ .native-workspace .inventory-page{padding-top:calc(74px + env(safe-area-inset-top,0px));}
+ main.native-workspace>.floating-nav,main.native-workspace>.floating-nav[data-floating="true"]{display:grid !important;position:fixed;left:0;right:0;top:calc(18px + env(safe-area-inset-top,0px));width:min(352px,calc(100% - 44px));height:44px;min-height:44px;margin:0 auto !important;padding:4px 6px !important;transform:none;pointer-events:none;z-index:90;}
+ main.native-workspace>.floating-nav>.wordmark{display:block !important;}
+ main.native-workspace>.floating-nav>.nav-import,main.native-workspace>.floating-nav>.search-field{display:flex !important;}
+ main.native-workspace>.floating-nav>.filter-wrap{display:block !important;}
+ main.native-workspace>.floating-nav>:is(.wordmark,.nav-import,.search-field,.filter-wrap){opacity:calc(1 - var(--workspace-progress,0));pointer-events:auto;}
+ main.native-workspace[data-page="offers"]>.floating-nav>:is(.wordmark,.nav-import,.search-field,.filter-wrap){pointer-events:none;}
+ main.native-workspace>.floating-nav::before{display:block;opacity:0;}
+ main.native-workspace>.floating-nav[data-floating="true"]::before{opacity:calc(1 - var(--workspace-progress,0));}
+ main.native-workspace>.floating-nav>.app-tabbar{pointer-events:auto;}
+ .native-workspace .app-tabbar:is([data-active="inventory"],[data-active="offers"],[data-active="sales"]) .nav-selection{transform:translateX(calc(var(--workspace-progress,0) * 100%));transition:none;}
+ .offer-editor-open .native-workspace>.workspace-pager{overflow-x:hidden;}
+ .offer-editor-open main.native-workspace>.floating-nav{visibility:hidden;}
+ main.native-workspace[data-page="inventory"] .offers-page .studio-editor-screen{visibility:hidden;}
+}
+
+@media(max-width:760px){
+ .resell-app.native-workspace>.floating-nav{height:44px;min-height:44px;grid-template-areas:"brand import search filters";grid-template-columns:52px minmax(36px,1fr) minmax(36px,0fr) 36px;gap:3px;}
+ .resell-app.native-workspace>.floating-nav[data-command="search"]{grid-template-columns:52px minmax(36px,0fr) minmax(36px,1fr) 36px;}
+ .resell-app.native-workspace>.floating-nav::before{display:block !important;}
+ .resell-app.native-workspace>.floating-nav>:is(.wordmark,.nav-import,.search-field,.filter-wrap){transform:translateX(calc(var(--workspace-progress,0) * -100vw));}
+ .native-workspace .offers-page{padding-top:0;}
+ .native-workspace .offer-studio{padding-top:18px;}
+ .native-workspace .studio-browser-toolbar{position:sticky;top:18px;z-index:45;display:grid;grid-template-columns:52px minmax(0,1fr) 36px 36px;grid-template-areas:"brand search connect create";gap:3px;width:min(352px,calc(100vw - 44px));height:44px;min-height:44px;padding:4px 6px;margin:0 auto 14px;background:#0b0b0ded;border-radius:18px;}
+ .native-workspace .studio-browser-toolbar .studio-page-title,.native-workspace .studio-browser-toolbar .studio-title-actions{display:contents;}
+ .native-workspace .studio-page-title>div:first-child{grid-area:brand;align-self:center;min-width:0;padding:0 2px;}
+ .native-workspace .studio-page-title h1{font-size:18px;letter-spacing:-1.1px;font-weight:650;line-height:1;margin:0;white-space:nowrap;}
+ .native-workspace .studio-browser-toolbar .studio-list-toolbar{grid-area:search;display:flex;align-items:center;min-width:0;width:100%;height:36px;padding:0;margin:0;gap:2px;}
+ .native-workspace .studio-list-toolbar .studio-search{flex:1;min-width:0;padding:0 2px;border:0;background:transparent;border-radius:12px;height:36px;gap:5px;}
+ .native-workspace .studio-search>svg{width:18px;height:18px;}
+ .native-workspace .studio-search input{min-width:0;width:0;flex:1;font-size:16px;padding:0;}
+ .native-workspace .studio-search input::placeholder{font-size:11px;}
+ .native-workspace .studio-import{width:26px;min-width:26px;height:32px;min-height:32px;padding:0;border-radius:10px;}
+ .native-workspace .studio-import>span{display:none;}
+ .native-workspace .studio-import>svg{width:18px;height:18px;}
+ .native-workspace .studio-connect{grid-area:connect;width:36px;min-width:36px;height:36px;min-height:36px;padding:0;background:transparent;border:0;border-radius:14px;}
+ .native-workspace .studio-new{grid-area:create;width:36px;min-width:36px;height:36px;min-height:36px;padding:0;border-radius:14px;}
+ .native-workspace .studio-new>span{display:none;}
+ .native-workspace .studio-new>svg{width:22px;height:22px;}
+}
+
+@media(max-width:760px){
+ .native-workspace .workspace-page,.native-workspace .description,.native-workspace .characteristics-list{overscroll-behavior-x:auto;overscroll-behavior-y:none;}
+}
+
+@media(max-width:760px){
+ .native-workspace .studio-editor-screen{animation:none;}
+ .resell-app.native-workspace>.floating-nav>.filter-wrap{transform:none;}
+ .resell-app.native-workspace>.floating-nav>.filter-wrap>.filter-trigger{transform:translateX(calc(var(--workspace-progress,0) * -100vw));}
+}
+
+/* Static command surfaces; page gestures never translate the toolbars. */
+.command-leading{display:grid;place-items:center;width:30px;min-width:30px;height:32px;color:#91919b;}
+.command-leading>svg{width:18px;height:18px;}
+.command-toggle{grid-area:auto;}
+.resell-app>.floating-nav{grid-template-columns:auto minmax(150px,1fr) 36px auto auto;}
+@media(max-width:760px){
+ .studio-editor-screen,.studio-scroll,.floating-nav{touch-action:pan-y;}
+ .resell-app>.floating-nav,.resell-app>.floating-nav[data-command="search"],.resell-app.native-workspace>.floating-nav,.resell-app.native-workspace>.floating-nav[data-command="search"]{grid-template-columns:52px minmax(0,1fr) 36px 36px;transition:none;}
+ .resell-app>.floating-nav>.nav-command input{display:block !important;flex:1 !important;opacity:1 !important;visibility:visible !important;pointer-events:auto !important;}
+ .resell-app>.floating-nav>.nav-command{padding:0 2px !important;background:transparent !important;}
+ .resell-app.native-workspace>.floating-nav>:is(.wordmark,.nav-import,.search-field,.filter-wrap),.resell-app.native-workspace>.floating-nav>.filter-wrap>.filter-trigger{transform:none;opacity:1;}
+ .resell-app.native-workspace[data-page="offers"]>.floating-nav>:is(.wordmark,.nav-import,.command-toggle,.filter-wrap){visibility:hidden;pointer-events:none;}
+ .resell-app.native-workspace[data-page="offers"]>.floating-nav::before{opacity:0;}
+ .resell-app.native-workspace[data-page="inventory"]>.floating-nav[data-floating="true"]::before{opacity:1;}
+ .native-workspace .offers-page{padding-top:84px;}
+ .native-workspace .offer-studio{padding-top:0;}
+ .native-workspace .studio-browser-toolbar{position:fixed;left:0;right:0;top:calc(18px + env(safe-area-inset-top,0px));margin:0 auto;grid-template-columns:52px minmax(0,1fr) 32px 36px 36px;grid-template-areas:"brand spacer import connect create";}
+ .native-workspace .studio-browser-toolbar .studio-list-toolbar{grid-area:import;width:32px;}
+ .native-workspace[data-page="inventory"] .studio-browser-toolbar{visibility:hidden;pointer-events:none;}
+ .native-workspace .app-tabbar:is([data-active="inventory"],[data-active="offers"],[data-active="sales"]) .nav-selection{transition:transform .16s ease;}
+ .native-workspace .app-tabbar[data-active="inventory"] .nav-selection{transform:translateX(0);}
+ .native-workspace .app-tabbar[data-active="offers"] .nav-selection{transform:translateX(100%);}
+}
+
+.resell-app[data-page="offers"]>.floating-nav>.command-toggle{display:none;}
+@media(max-width:760px){.command-toggle{grid-area:search;}.resell-app.native-workspace>.floating-nav>.command-toggle{display:grid;}}
+@media(max-width:760px){.resell-app.native-workspace[data-page="inventory"]>.floating-nav>.command-toggle{pointer-events:auto;visibility:visible;}}
+@media(max-width:760px){.resell-app.native-workspace[data-page="offers"]>.floating-nav>.nav-command input{visibility:hidden !important;pointer-events:none !important;}.native-workspace .workspace-page{scrollbar-width:none;}.native-workspace .workspace-page::-webkit-scrollbar{display:none;}}
+
+/* The browser's horizontal scroll timeline moves the bars with the pages.
+   No React render or JavaScript style write is needed for animation frames. */
+@keyframes inventory-bar-pan { from{transform:translateX(0)} to{transform:translateX(-200vw)} }
+@keyframes workspace-selection-pan { from{transform:translateX(0)} to{transform:translateX(200%)} }
+.offers-toolbar-host{display:contents;}
+.studio-browser-toolbar[data-editor-hidden="true"]{visibility:hidden !important;pointer-events:none !important;}
+@media(max-width:760px){
+ .native-workspace .inventory>article[data-paint-retained="true"]{content-visibility:visible;}
+ .native-workspace .inventory>article[data-paint-retained="true"] .media-viewport{transform:translateZ(0);}
+}
+@media(max-width:760px){
+ @supports (timeline-scope:--workspace-slide) and (animation-timeline:--workspace-slide){
+  main.resell-app.native-workspace{timeline-scope:--workspace-slide;}
+  .native-workspace>.workspace-pager{scroll-timeline:--workspace-slide inline;}
+  .resell-app.native-workspace>.floating-nav>:is(.wordmark,.nav-import,.command-toggle),
+  .resell-app.native-workspace>.floating-nav>.filter-wrap>.filter-trigger,
+  .resell-app.native-workspace>.floating-nav::before{
+   animation:inventory-bar-pan auto linear both;
+   animation-timeline:--workspace-slide;
+   visibility:visible;
+  }
+  .resell-app.native-workspace:is([data-page="inventory"],[data-page="offers"],[data-page="sales"])>.floating-nav>:is(.wordmark,.nav-import,.command-toggle,.filter-wrap){visibility:visible;}
+  .resell-app.native-workspace:is([data-page="inventory"],[data-page="offers"],[data-page="sales"])>.floating-nav>.nav-command input{visibility:visible !important;}
+  .resell-app.native-workspace>.floating-nav[data-floating="true"]::before{opacity:1;}
+  .native-workspace .app-tabbar:is([data-active="inventory"],[data-active="offers"],[data-active="sales"]) .nav-selection{
+   animation:workspace-selection-pan auto linear both;
+   animation-timeline:--workspace-slide;
+   transition:none;
+  }
+ }
+}
+
+/* The Offers bar rides the native horizontal scroller directly. It has no
+   second animation/timeline to restart when the editor changes its contents. */
+@media(max-width:760px){
+ .native-workspace>.workspace-pager>.offers-toolbar-host{display:block;position:absolute;left:100%;top:0;width:100%;height:0;z-index:95;pointer-events:none;}
+ .native-workspace .offers-toolbar-host>.studio-browser-toolbar{position:absolute;visibility:visible;animation:none;transform:none;will-change:auto;transition:none;pointer-events:auto;grid-template-columns:52px minmax(0,1fr) 32px 36px;grid-template-areas:"brand spacer import create";}
+}
+
+/* Touch feedback follows the actual press, never a sticky mouse hover/focus. */
+@media(max-width:760px){
+ .app-tabbar .app-destination,.app-tabbar .app-destination-wrap{height:52px;}
+ .app-tabbar .app-destination{font-size:9px;gap:4px;}
+ .app-tabbar .app-destination>svg,.app-tabbar .app-destination-wrap>.tool-trigger svg,.app-tabbar .account-trigger svg{width:22px;height:22px;}
+ .app-tabbar .app-destination-wrap>span{bottom:7px;font-size:9px;}
+ .app-tabbar .app-destination-wrap>.tool-trigger,.app-tabbar .account-trigger{padding-top:7px;}
+}
+.draft-swipe-shell>.draft-swipe-action{align-items:center;pointer-events:none;}
+html[data-pointer-input="touch"] :is(button,a,summary,[role="button"]):focus { outline:none; }
+.filter-popover{background:#222225;opacity:1;isolation:isolate;backdrop-filter:none;overflow-y:auto;pointer-events:auto;}
+.filter-choice-options{background:#303034;opacity:1;isolation:isolate;pointer-events:auto;}
+.filter-choice-options button{height:42px;min-height:42px;}
+.filter-popover{display:flex;flex-direction:column;gap:12px;overflow:hidden;}
+.filter-popover>.filter-heading,.filter-popover>.filter-bottom{flex-shrink:0;}
+.filter-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1 1 auto;padding:1px 2px;align-content:start;scrollbar-width:thin;}
+.filter-section-title{grid-column:1/-1;font-size:10px;color:#a0a0aa;font-weight:500;margin:10px 1px 2px;letter-spacing:.3px;}
+.filter-section-title:first-child{margin-top:0;}
+.filter-fields>fieldset{height:60px;position:relative;min-width:0;border:1px solid #ffffff0c;border-radius:13px;padding:22px 12px 6px;margin:0;}
+.filter-fields>fieldset legend{position:absolute;top:8px;left:12px;font-size:10px;color:#91919a;padding:0;}
+.filter-options-search{position:sticky;top:0;z-index:1;width:100%;height:40px;min-height:40px;margin:0 0 2px;padding:8px 10px;border:1px solid #ffffff12;border-radius:10px;background:#232326;font-size:13px;}
+.filter-options-empty{height:42px;margin:0;padding:12px 9px;font-size:12px;color:#a0a0aa;}
+@media(max-width:760px){
+ .filter-popover{padding:14px;gap:8px;}
+ .filter-choice-options{position:fixed;margin:0;}
+}
+:is(button,a,summary,[role="button"],input,textarea,select) { -webkit-tap-highlight-color:transparent; }
+:is(button,summary,[role="button"]) { -webkit-user-select:none;user-select:none; }
+/* Inventory is now a monitored collection with one search control. */
+.resell-app.offer-monitoring>.floating-nav>.nav-command input{display:block;flex:1;opacity:1;visibility:visible;pointer-events:auto;min-width:0}
+@media(max-width:760px){
+ .resell-app.offer-monitoring.native-workspace>.floating-nav[data-command]{grid-template-areas:"brand import filters";grid-template-columns:52px minmax(0,1fr) 36px;gap:6px}
+ .resell-app.offer-monitoring>.floating-nav[data-command]>.nav-command{grid-area:import;padding:0 6px;gap:7px;justify-content:flex-start;background:transparent;border-color:transparent}
+ .resell-app.offer-monitoring>.floating-nav[data-command]>.nav-command input{display:block;flex:1;opacity:1;visibility:visible!important;pointer-events:auto}
+ .resell-app.offer-monitoring>.floating-nav[data-command]>.nav-command .command-leading{display:grid;flex:none;width:18px;height:18px}
+}
+/* Center the empty collection between the floating navigation bars. */
+.offer-monitoring .inventory-page:has(>.empty) { display:flex; flex-direction:column; min-height:calc(100dvh - 165px); }
+.offer-monitoring .inventory-page>.empty { display:flex; flex:1; flex-direction:column; align-items:center; justify-content:center; gap:15px; width:100%; margin:0; padding:28px 16px; }
+.offer-monitoring .inventory-page>.empty :is(h1,p) { margin:0; }
+.offer-monitoring .inventory-page>.empty p { max-width:390px; line-height:1.7; }
+@media(max-width:760px) { .offer-monitoring.native-workspace .inventory-page:has(>.empty) { min-height:0; } }
+.startup-retry{position:absolute;top:62%;left:24px;right:24px;max-width:440px;margin:auto;text-align:center;color:#9b9ba6;font-size:13px;line-height:1.6}.startup-retry button{margin-top:12px;padding:11px 22px;border:1px solid #ffffff16;border-radius:30px;background:#ffffff0b;color:#eee}
+@media(max-width:760px){
+ .media-dialog{width:100vw !important;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;}
+ .media-dialog .viewer-shell{height:100%;max-height:none;position:relative;border-radius:0;padding:0;}
+ .media-dialog .viewer-media{height:100% !important;border-radius:0;}
+ .media-dialog .viewer-media .swipe-page img:not(.media-backdrop){height:100%;max-height:none;object-fit:cover;}
+ .media-dialog .viewer-header{position:absolute;inset:0 0 auto;z-index:5;background:linear-gradient(#0009,transparent);}
+ .media-dialog .viewer-footer{position:absolute;inset:auto 0 0;z-index:5;background:linear-gradient(transparent,#0009);}
+}
