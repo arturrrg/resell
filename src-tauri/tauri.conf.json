@@ -44,10 +44,6 @@
       "icons/icon.ico"
     ],
     "category": "Business",
-    "shortDescription": "Private device inventory",
-    "iOS": {
-      "minimumSystemVersion": "15.0",
-      "infoPlist": "Info.ios.plist"
-    }
+    "shortDescription": "Private device inventory"
   }
 }

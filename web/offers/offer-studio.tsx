@@ -1574,7 +1574,7 @@ export default function OfferStudio({
               </a>
             </div>
             <p className="studio-group-note">
-              iPhone camera and marketplace transfer require the signed iOS app.
+              Camera capture and marketplace transfer require the Android app.
             </p>
           </div>
         </Sheet>

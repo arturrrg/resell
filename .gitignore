@@ -3,7 +3,6 @@ web/dist/
 src-tauri/target/
 src-tauri/gen/
 src-tauri/android/
-src-tauri/ios/
 .env
 .env.*
 !.env.example

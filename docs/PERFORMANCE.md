@@ -146,9 +146,7 @@ and border-right=0; the two separators measured exactly 1 px. All four navigatio
 symbols use the same SVG shape coordinates in outline and filled states. Offers
 keeps its square/pencil silhouette, Sales uses matching hollow/filled bars, and
 Account uses a circular person profile symbol. The one-pixel selected-icon
-translation is removed. Apple's User Profile example uses person.crop.circle:
-https://developer.apple.com/tutorials/swiftui/interfacing-with-uikit . Resell uses
-its own SVG geometry with that visual convention, not a copied platform font.
+translation is removed.
 The Account sync caption was removed; existing error reporting remains.
 
 Marketplace display names use the complete text before @, preserving plus tags,

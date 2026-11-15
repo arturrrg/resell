@@ -2864,7 +2864,6 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
- "tauri-plugin-marketplace",
  "tauri-plugin-opener",
  "url",
 ]
@@ -3620,14 +3619,6 @@ dependencies = [
  "serde_json",
  "tauri-utils",
  "walkdir",
-]
-
-[[package]]
-name = "tauri-plugin-marketplace"
-version = "0.1.0"
-dependencies = [
- "tauri",
- "tauri-plugin",
 ]
 
 [[package]]

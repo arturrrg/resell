@@ -22,7 +22,7 @@ After the owner confirmed the phone number, the resumed automatic submission ret
 
 999.md's tested free-account limits are 100 characters per title, 2,000 description characters and ten photos. The editor validates these before handing off. It does not invent a translation or claim uploaded photos succeeded merely because a FileList was assigned: completion checks retained fields and marketplace-returned photo previews.
 
-The website cannot attach photos or fill another site's form across origins. Its preparation sheet provides **Copy titles**, **Copy description**, an ordered photo ZIP, an offer JSON export and the official creator link. Sign in to the same Resell account in Android to open the automatically synced draft for native filling. Android is the tested autofill platform; iOS filling remains unverified.
+The website cannot attach photos or fill another site's form across origins. Its preparation sheet provides **Copy titles**, **Copy description**, an ordered photo ZIP, an offer JSON export and the official creator link. Sign in to the same Resell account in Android to open the automatically synced draft for native filling. Android is the supported native autofill platform.
 
 ## Drafts and private cloud storage
 
@@ -46,7 +46,7 @@ The official Continue action is an anchor wrapping a button with identical text.
 
 Mobile price editing and verification select the visible dialog containing input[name="2.value"], rather than the first generic dialog, and wait for its enabled Apply control. The specific #add-form-progress tutorial is recognized by its instructional text and dismissed through its own close control. Unrelated tutorials, payment dialogs and hidden dialogs are not selected.
 
-This version has one marketplace session per app, not simultaneous multi-account containers. Changing the Resell workspace or saved login clears that marketplace cookie session before preparing. Automatic filling compares a saved public username with the creator's account and waits on a mismatch. Email logins establish the configured native session first; no public username is inferred from an email address. The account is checked again throughout filling. Passwords are not available to website, desktop or iOS settings in this release.
+This version has one marketplace session per app, not simultaneous multi-account containers. Changing the Resell workspace or saved login clears that marketplace cookie session before preparing. Automatic filling compares a saved public username with the creator's account and waits on a mismatch. Email logins establish the configured native session first; no public username is inferred from an email address. The account is checked again throughout filling. Passwords are not available to website or desktop settings in this release.
 
 ## Android build
 
@@ -67,22 +67,6 @@ Set VITE_API_BASE_URL to the HTTPS deployment before native compilation. The ser
 Native prebuilds copy tracked Android sources, credential-backup exclusions and trusted bundled scripts into the generated project on Windows, macOS and Linux. The Windows helper handles only Tauri's specific symbolic-link packaging denial with an ordinary library copy; it does not change OS security settings.
 
 Installed tools on this Windows machine: C++ Build Tools 2022, Rust 1.99.1, Microsoft OpenJDK 21.0.13, SDK platforms 36/37, build tools 36/37, NDK 27.2.12479018 and ARM64 Rust Android target. The ARM64 debug APK is src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk. It is a development build, not a Play Store release.
-
-### What an iPhone needs
-
-A cable from an iPhone to this Windows laptop is not enough to build this Tauri iOS app. The normal development route requires:
-
-1. A Mac running a macOS version supported by the chosen full Xcode installation, plus Xcode's iOS platform support.
-2. Node, Rust, CocoaPods and the iOS Rust targets from the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/#ios).
-3. An Apple Account signed into Xcode and a signing team selected for the sandbox. Xcode can manage signing automatically.
-4. The iPhone paired with the Mac, initially by USB. Unlock it and approve Trust on the phone when requested.
-5. Enable Developer Mode on the iPhone when requested during pairing (Settings → Privacy & Security → Developer Mode, restart and confirm).
-6. Initialize the iOS sandbox, select the phone as the run destination, and build/run. Sign into 999.md inside the installed app, then repeat the real-form checks without publishing.
-
-A free Personal Team can test on a personal iPhone, but its provisioning expires after seven days and the app must be rebuilt/reinstalled. Apple Developer Program membership is needed for TestFlight distribution. Once installed and provisioned, normal app use does not require a USB cable or laptop; 999.md preparation requires internet access. iOS WebView transfer remains unverified until tested on that build.
-
-Official references: [Apple physical-device signing](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices), [Developer Mode](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device), [Personal Team limits](https://developer.apple.com/help/account/basics/about-your-developer-account).
-
 
 ## Browser fixture and checks
 
@@ -121,7 +105,7 @@ On 12–13 November 2026, on a Xiaomi M2003J15SC running Android 12 / WebView 15
 - The website was deployed to https://resell-workspace.vercel.app. Production APIs now return the correct native origin headers and deny an unapproved origin. A supplied public advert imported successfully in about 1.4 seconds in one smoke run; this is an observation, not an instant-import guarantee. Current bank selling rates were returned successfully.
 - All 97 automated tests, TypeScript, web production build and both host Rust safety tests passed. Initial JavaScript was 98.43 KB gzip; offer editing and cloud code load separately. Small-phone layout was checked at 320 × 740; larger breakpoint checks are recorded when completed.
 
-Remaining verification: iOS build/device acceptance, simultaneous marketplace-account containers, interrupted large-photo uploads, expired handoffs, switching accounts during filling, physical frame-rate/CLS measurements and ten full-size camera-photo performance. The ten-photo fixture proves count, identity and ordering, not a network-speed guarantee. If Android kills the process during external Google sign-in, reopen the saved draft and prepare again; the pending handoff is memory-only. Direct Simpals credentials avoid that app switch.
+Remaining verification: simultaneous marketplace-account containers, interrupted large-photo uploads, expired handoffs, switching accounts during filling, physical frame-rate/CLS measurements and ten full-size camera-photo performance. The ten-photo fixture proves count, identity and ordering, not a network-speed guarantee. If Android kills the process during external Google sign-in, reopen the saved draft and prepare again; the pending handoff is memory-only. Direct Simpals credentials avoid that app switch.
 
 ## Main-app acceptance completed — 13 November 2026
 
@@ -131,7 +115,7 @@ The final Android build was installed through the normal APK installer after MIU
 
 The saved-credentials run reached the official Simpals confirmation page automatically using the slower sign-in sequence. Subsequent corrected runs automatically pressed the link-wrapped Continue action and started filling the matching @arturgarstea creator without an extra Fill tap. The final run passed the corrected price editor, dismissed the recognized tutorial and finished with **100% Completat**, **10 photos accepted**, **Ready for your review**, and no missing supplied fields. The test used the existing Romanian/Russian titles, original three-paragraph description, 13000 MDL, Apple / iPhone 15 Pro, used/private seller, iOS, Chișinău, 256 GB, 8 GB RAM, 94% battery health and 3274 mAh. No Publish or promotion action was performed. The unpublished completed form was left open for review. Evidence: resell-automatic-preparation.png.
 
-All 106 automated tests, TypeScript, production web build and the ARM64 Android build passed. The two host Rust origin-safety checks also passed during this change. The earlier notes about unreliable sign-in/continuation describe the previous builds; this section records the corrected automatic flow. CAPTCHA/OTP handling and simultaneous marketplace-account containers remain manual/unimplemented respectively, and iOS remains unverified.
+All 106 automated tests, TypeScript, production web build and the ARM64 Android build passed. The two host Rust origin-safety checks also passed during this change. The earlier notes about unreliable sign-in/continuation describe the previous builds; this section records the corrected automatic flow. CAPTCHA/OTP handling and simultaneous marketplace-account containers remain manual/unimplemented respectively,.
 
 The corrected main Android build was installed successfully with the existing package identifier, then its saved ten-photo draft was prepared on the real 999.md creator. The new cookie banner dismissed automatically. The first-step Intro.js guide closed through its own skip control; device type was selected automatically. Inspection identified that the offer-type modal has no data-testid/id, unlike the device/specification pickers, so it now uses its exact inspected heading instead of the first generic dialog.
 
