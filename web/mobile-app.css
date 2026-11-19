@@ -387,7 +387,7 @@
     padding-top: calc(24px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
   }
-  .auth-shell > .wordmark {
+  .auth-header .wordmark {
     font-size: 27px;
   }
   .auth-shell .auth-content {

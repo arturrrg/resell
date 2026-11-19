@@ -1,3 +1,4 @@
+import { useLanguage, localeFor } from "./i18n";
 import { useState } from "react";
 import { LoaderCircle, RotateCw, Clock3 } from "lucide-react";
 import type { Device } from "./storage";
@@ -5,7 +6,7 @@ import { Sheet } from "./sheet";
 import { SOURCE_REFRESH_INTERVAL } from "../shared/refresh";
 const date = (value?: string) =>
   value && Number.isFinite(Date.parse(value))
-    ? new Date(value).toLocaleString()
+    ? new Date(value).toLocaleString(localeFor())
     : "Not checked yet";
 export function SourceStatus({
   device,
@@ -16,6 +17,7 @@ export function SourceStatus({
   refreshing: boolean;
   onRetry: (device: Device) => void;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   if (!refreshing && !device.sourceRefreshError) return null;
   const checkedTime = Date.parse(device.sourceCheckedAt || "");

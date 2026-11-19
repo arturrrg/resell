@@ -2858,7 +2858,7 @@ dependencies = [
 
 [[package]]
 name = "resell"
-version = "1.6.48"
+version = "1.6.53"
 dependencies = [
  "serde",
  "serde_json",

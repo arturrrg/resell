@@ -20,7 +20,7 @@ export function TemplateLibrary({ templates, onClose, onCreate, onUse, onActions
         const name = template.templateName || template.title || "Phone template";
         return <div className="template-library-row" key={template.id}>
           <button className="template-library-use" aria-label={`Use template ${name}`} onClick={() => onUse(template)}>
-            <span className="template-library-name"><strong>{name}</strong></span>
+            <span className="template-library-name"><strong translate={template.templateName || template.title ? "no" : "yes"}>{name}</strong></span>
           </button>
           <button className="template-library-more" aria-label={`Actions for template ${name}`} onClick={() => onActions(template)}><MoreHorizontal /></button>
         </div>;

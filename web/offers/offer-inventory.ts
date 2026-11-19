@@ -66,6 +66,7 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
             else if (expectedTotal !== value.total) consistent = false;
             const lastPage = skip + 50 >= value.total;
             complete = lastPage && consistent && seen.size === value.total;
+            controller.signal.throwIfAborted();
             await mergeMonitoredOffers(owner!, login, external ? offers : offers.filter(ad => prepared.has(ad.advertId)), complete, [...seen], publishedIds);
             if (lastPage) break;
             if (controller.signal.aborted) return;
@@ -92,7 +93,7 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       }
       for (const p of draft.publications || []) {
         const source = byAdvert.get(p.advertId);
-        if (!publicationIsVisible(source)) continue;
+        if (!publicationIsVisible(source, true)) continue;
         const photos = () => { let list = photoLists.current.get(draft.photos); if (!list) { list = draft.photos.map(p => { let url = objectUrls.current.get(p.blob); if (!url) { url = URL.createObjectURL(p.blob); objectUrls.current.set(p.blob, url); } return url; }); photoLists.current.set(draft.photos, list); } return list; };
         inventory.set(p.advertId, source || { id: "offer:" + p.advertId, offerDraftId: draft.id, title: draft.title, model: draft.model, brand: draft.brand, storage: draft.storage, color: draft.color, condition: draft.condition, batteryHealth: draft.batteryHealth, sourcePrice: Number((p.price ?? draft.price).replace(",", ".")), currency: p.currency ?? draft.currency, listingDescription: draft.description, photos: photos(), listingUrl: "https://999.md/ro/" + p.advertId, sellerName: p.login, sourceAvailability: p.state === "submitted" ? "Under review" : "Available" });
       }

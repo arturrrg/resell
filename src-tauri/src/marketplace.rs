@@ -104,6 +104,7 @@ pub async fn connect_marketplace_account(
     window: WebviewWindow,
     owner: String,
     id: String,
+    return_to_accounts: bool,
 ) -> Result<(), String> {
     guard(&window, &owner)?;
     #[cfg(target_os = "android")]
@@ -111,13 +112,13 @@ pub async fn connect_marketplace_account(
         let _: Value = window
             .state::<MarketplaceHandle>()
             .0
-            .run_mobile_plugin("connect", json!({"owner":owner,"id":id}))
+            .run_mobile_plugin("connect", json!({"owner":owner,"id":id,"returnToAccounts":return_to_accounts}))
             .map_err(|_| "Could not open account sign-in.".to_string())?;
         return Ok(());
     }
     #[cfg(not(target_os = "android"))]
     {
-        let _ = id;
+        let _ = (id, return_to_accounts);
         Err("Account verification is available on Android.".into())
     }
 }

@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
     envDir: process.cwd(),
     publicDir: 'public',
     base: '/',
+    resolve: { alias: { '@resell/localized': resolve(process.cwd(), 'web/localized') } },
+    esbuild: { jsxImportSource: '@resell/localized' },
     define: {
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || '')
     },

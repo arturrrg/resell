@@ -42,6 +42,7 @@ class ProfileArgs {
   var login: String = ""
   var password: String = ""
   var id: String = ""
+  var returnToAccounts: Boolean = false
 }
 
 @TauriPlugin
@@ -129,6 +130,12 @@ class MarketplacePlugin(private val host: Activity) : Plugin(host) {
           browser.evaluateJavascript("(()=>{const e=new Event('resell:back',{cancelable:true});return !window.dispatchEvent(e);})()") { consumed ->
             if (consumed != "true") host.moveTaskToBack(true)
           }
+        } else if (connectReturnUrl != null) {
+          val target = connectReturnUrl!!
+          connectReturnUrl = null
+          preparationGeneration++
+          activeOwner = null
+          browser.loadUrl(target)
         } else if (browser.canGoBack()) browser.goBack()
         else host.moveTaskToBack(true)
       }
@@ -340,17 +347,12 @@ class MarketplacePlugin(private val host: Activity) : Plugin(host) {
   }
 
   @Command
-  fun connect(invoke: Invoke) {
-    if (!localPage()) { invoke.reject("Connect inside Resell."); return }
-    connectReturnUrl = view?.url
-    // A fresh credential sign-in establishes the email-to-public-name binding.
-    boundSession = false
-    preferences.edit().remove("lastOwner").remove("lastLogin").commit()
-    beginPreparation(invoke)
-  }
+  fun connect(invoke: Invoke) = begin(invoke, connecting = true)
 
   @Command
-  fun beginPreparation(invoke: Invoke) {
+  fun beginPreparation(invoke: Invoke) = begin(invoke, connecting = false)
+
+  private fun begin(invoke: Invoke, connecting: Boolean) {
     if (!localPage()) { invoke.reject("Start preparation inside Resell."); return }
     val args = invoke.parseArgs(ProfileArgs::class.java)
     val owner = args.owner
@@ -361,13 +363,17 @@ class MarketplacePlugin(private val host: Activity) : Plugin(host) {
       connected = (if (args.id.isNotEmpty()) account(bundle, args.id) else selected(bundle)) ?: run { activeOwner = null; attempted = true; invoke.reject("Connect a 999.md account before preparing an offer."); return }
       activeAccountId = connected.getString("id")
     } catch (_: Exception) { invoke.reject("Reconnect the saved 999.md account before preparing."); return }
+    connectReturnUrl = if (connecting) view?.url?.let { url ->
+      if (args.returnToAccounts) Uri.parse(url).buildUpon().appendQueryParameter("marketplaceReturn", "accounts").build().toString()
+      else url
+    } else null
     activeOwner = owner; attempted = false
     preparationGeneration++
     watchSignInRoute(preparationGeneration, SystemClock.elapsedRealtime() + 600000)
     val previous = preferences.getString("lastOwner", null)
     val login = connected.getString("login")
     val previousLogin = preferences.getString("lastLogin", null)
-    boundSession = previous == owner && previousLogin == login
+    boundSession = !connecting && previous == owner && previousLogin == login
     preferences.edit().putString("lastOwner", owner).putString("lastLogin", login).apply()
     val result = JSObject().put("login", connected.optString("username").ifEmpty { login }) as JSObject
     fun ready() {
@@ -377,7 +383,7 @@ class MarketplacePlugin(private val host: Activity) : Plugin(host) {
         view?.loadUrl("https://v2.simpalsid.com/sid/ro/user/login?projectId=$project&redirectUrl=$redirect")
       }
     }
-    if (previous != owner || previousLogin != login) {
+    if (!boundSession) {
       CookieManager.getInstance().removeAllCookies { CookieManager.getInstance().flush(); ready() }
     } else ready()
   }

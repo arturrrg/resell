@@ -61,7 +61,7 @@ export const DeviceCard = memo(function DeviceCard({
       />
       <div className="card-body">
         <small>{d.brand || "Device"}</small>
-        <h2>{d.model || d.title || "Imported device"}</h2>
+        <h2 translate={d.model || d.title ? "no" : "yes"}>{d.model || d.title || "Imported device"}</h2>
         <p className="metadata">
           {[
             d.storage,
@@ -77,7 +77,7 @@ export const DeviceCard = memo(function DeviceCard({
         {d.listingDescription && (
           <section className="description-block">
             <h3>Description</h3>
-            <p className="description">{d.listingDescription}</p>
+            <p className="description" translate="no">{d.listingDescription}</p>
           </section>
         )}
         <footer>
@@ -98,6 +98,7 @@ export const DeviceCard = memo(function DeviceCard({
                     {profileUrl(d.sellerUrl) ? (
                       <a
                         className="seller-name"
+                        translate="no"
                         href={profileUrl(d.sellerUrl)}
                         title={d.sellerName}
                         aria-label={`Seller: ${d.sellerName}`}
@@ -108,7 +109,7 @@ export const DeviceCard = memo(function DeviceCard({
                         {d.sellerName}
                       </a>
                     ) : (
-                      <span className="seller-name" title={d.sellerName}>
+                      <span className="seller-name" title={d.sellerName} translate="no">
                         {d.sellerName}
                       </span>
                     )}

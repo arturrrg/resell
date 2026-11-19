@@ -544,7 +544,7 @@ export function OfferLab() {
             <div className="offer-preview-body">
               <span className="offer-eyebrow">{draft.brand || "BRAND"}</span>
               <div className="offer-preview-heading">
-                <h2>{draft.title || "Your next offer"}</h2>
+                <h2 translate={draft.title ? "no" : "yes"}>{draft.title || "Your next offer"}</h2>
                 <strong>
                   {draft.price || "—"} <small>{draft.currency}</small>
                 </strong>

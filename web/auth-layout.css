@@ -1,11 +1,21 @@
 /* A scrollable viewport keeps secondary account actions above the keyboard. */
 main.auth-shell {
+  position: relative;
   height: var(--auth-viewport-height, 100dvh);
   min-height: 0;
   padding: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scroll-padding-block: 20px;
+}
+.auth-header {
+  position: absolute;
+  inset: max(18px, env(safe-area-inset-top)) clamp(24px, 6vw, 76px) auto;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
 }
 .auth-shell .auth-gate {
   min-height: 100%;
@@ -23,10 +33,9 @@ main.auth-shell {
   min-height: 40px;
 }
 @media (max-height: 600px) {
-  .auth-shell > .wordmark { display: none; }
   .auth-shell .auth-left {
     justify-content: flex-start;
-    padding: 24px 24px max(12px, env(safe-area-inset-bottom));
+    padding: 76px 24px max(12px, env(safe-area-inset-bottom));
   }
   /* An auto spacer puts the form just above the IME. It collapses to zero
      when the form needs to scroll, keeping its first fields reachable. */

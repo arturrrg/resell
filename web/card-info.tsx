@@ -1,8 +1,7 @@
 import type { Device } from "./storage";
+import { specificationLabel } from "./inventory-fields";
+import { useLanguage, translate, localeFor } from "./i18n";
 import { convertMdl, freshRates, type ExchangeRates } from "../shared/exchange";
-const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
-const rounded = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-const rateDate = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Chisinau", dateStyle: "medium", timeStyle: "short" });
 export function Price({
   amount,
   currency,
@@ -12,6 +11,10 @@ export function Price({
   currency?: string;
   rates: ExchangeRates | null;
 }) {
+  const language = useLanguage();
+  const number = new Intl.NumberFormat(localeFor(language), { maximumFractionDigits: 2 });
+  const rounded = new Intl.NumberFormat(localeFor(language), { maximumFractionDigits: 0 });
+  const rateDate = new Intl.DateTimeFormat(localeFor(language), { timeZone: "Europe/Chisinau", dateStyle: "medium", timeStyle: "short" });
   const mdl = ["MDL", "LEI"].includes((currency || "").toUpperCase());
   const converted =
     mdl && amount != null && freshRates(rates)
@@ -44,6 +47,7 @@ export function Price({
   );
 }
 export function Characteristics({ device }: { device: Device }) {
+  const language = useLanguage();
   const fallback = [
     ["Brand", device.brand],
     ["Model", device.model],
@@ -69,11 +73,11 @@ export function Characteristics({ device }: { device: Device }) {
   if (!fields.length) return null;
   return (
     <section className="characteristics-block">
-      <h3>Specifications</h3>
+      <h3>{translate("Specifications", language)}</h3>
       <dl className="characteristics-list">
         {fields.map(({ label, value }, i) => (
           <div key={label + i}>
-            <dt title={label}>{label}</dt>
+            <dt title={translate(specificationLabel(label), language)}>{translate(specificationLabel(label), language)}</dt>
             <dd title={value}>{value}</dd>
           </div>
         ))}

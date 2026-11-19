@@ -320,7 +320,7 @@ export function MarketplaceSignInSheet({
                         );
                       setEditing(null);
                       if (savedAccount && !savedAccount.username) {
-                        await invoke("connect_marketplace_account", { owner, id: savedAccount.id });
+                        await invoke("connect_marketplace_account", { owner, id: savedAccount.id, returnToAccounts: embedded });
                       }
                     });
                   }}
@@ -366,7 +366,7 @@ export function MarketplaceSignInSheet({
                   </button>
                 </form>
                 {editing && <button className="marketplace-verify" disabled={working} onClick={() => void run(async () => {
-                  await invoke("connect_marketplace_account", { owner, id: editing });
+                  await invoke("connect_marketplace_account", { owner, id: editing, returnToAccounts: embedded });
                 })}><UserRound /><span>{profile.accounts.find(a => a.id === editing)?.username ? "Refresh profile from 999.md" : "Sign in to verify profile"}</span><ChevronRight /></button>}
               </>
             )

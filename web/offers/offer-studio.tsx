@@ -1,3 +1,4 @@
+import { useLanguage, localeFor, translate } from "../i18n";
 import {
   useEffect,
   useLayoutEffect,
@@ -86,6 +87,7 @@ function OfferGallery({
   title: string;
   active?: boolean;
 }) {
+  useLanguage();
   const [urls, setUrls] = useState<string[]>([]);
   useEffect(() => {
     const next = photos.map((photo) => URL.createObjectURL(photo.blob));
@@ -99,12 +101,12 @@ function OfferGallery({
   );
 }
 const date = (value: string) =>
-  new Date(value).toLocaleDateString(undefined, {
+  new Date(value).toLocaleDateString(localeFor(), {
     month: "short",
     day: "numeric",
   });
 const money = (draft: OfferDraft) =>
-  `${draft.price ? Number(draft.price.replace(",", ".")).toLocaleString() : "—"} ${draft.currency}`;
+  `${draft.price ? Number(draft.price.replace(",", ".")).toLocaleString(localeFor()) : "—"} ${draft.currency}`;
 function selectedId() {
   return /^#offers\/([a-f0-9-]{36})$/.exec(location.hash)?.[1] || "";
 }
@@ -129,6 +131,7 @@ function Picker({
   onChange: (v: string) => void;
   allowCustom?: boolean;
 }) {
+  const language = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(""),
     [custom, setCustom] = useState(false),
@@ -196,7 +199,7 @@ function Picker({
             <div className="studio-picker-options">
               {items
                 .filter(([, text]) =>
-                  text.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+                  [text, translate(text, language)].some(value => value.toLocaleLowerCase().includes(query.toLocaleLowerCase())),
                 )
                 .map(([id, text]) => (
                   <button
@@ -238,6 +241,7 @@ function DraftCard({
   onActions: () => void;
   onDelete: () => void;
 }) {
+  useLanguage();
   const { consumeClick, cancelHold, ...hold } = useHoldAction(onActions);
   return (
     <SwipeDraft onDelete={onDelete} onGesture={cancelHold}>
@@ -260,7 +264,7 @@ function DraftCard({
             <span className="studio-draft-state">
               Draft · {date(draft.updatedAt)}
             </span>
-            <h2>{draft.title || "Untitled offer"}</h2>
+            <h2 translate={draft.title ? "no" : "yes"}>{draft.title || "Untitled offer"}</h2>
             <p>
               {[
                 draft.brand,
@@ -306,6 +310,7 @@ export default function OfferStudio({
   onCreateHandled?: () => void;
   onPublished?: (urls: string[], destination?: "inventory" | "offers") => void;
 }) {
+  useLanguage();
   const [cloudState, setCloudState] = useState<
     "local" | "syncing" | "synced" | "offline"
   >(accountId ? "syncing" : "local");
@@ -873,9 +878,9 @@ export default function OfferStudio({
                 } finally { setDeleting(false); }
               }}
             >
-              Delete {deleteTarget?.kind === "template" ? "template" : "draft"}
+              {deleteTarget?.kind === "template" ? "Delete template" : "Delete draft"}
             </button>
-            <button onClick={closeDelete} disabled={deleting}>Keep {deleteTarget?.kind === "template" ? "template" : "draft"}</button>
+            <button onClick={closeDelete} disabled={deleting}>{deleteTarget?.kind === "template" ? "Keep template" : "Keep draft"}</button>
           </div>
   );
   // The retained header rides the same compositor scroller as the Offers page.
@@ -1126,7 +1131,7 @@ export default function OfferStudio({
                       aria-label="Offer description"
                     />
                     <span>
-                      {draft.description.length.toLocaleString()} / 2,000
+                      {draft.description.length.toLocaleString(localeFor())} / 2,000
                     </span>
                   </label>
                 </div>
@@ -1333,7 +1338,7 @@ export default function OfferStudio({
                   <span className="studio-kicker">
                     {draft.brand || "DEVICE"}
                   </span>
-                  <h2>{draft.title || "Offer title"}</h2>
+                  <h2 translate={draft.title ? "no" : "yes"}>{draft.title || "Offer title"}</h2>
                   <strong className="studio-review-price">
                     {money(draft)}
                   </strong>
@@ -1356,7 +1361,7 @@ export default function OfferStudio({
                           ? "Russian title"
                           : "Romanian title"}
                       </dt>
-                      <dd>{draft.secondaryTitle || "Add a second title"}</dd>
+                      <dd translate={draft.secondaryTitle ? "no" : "yes"}>{draft.secondaryTitle || "Add a second title"}</dd>
                     </div>
                     <div>
                       <dt>Location</dt>
@@ -1367,7 +1372,7 @@ export default function OfferStudio({
                       <dd>{draft.phone || "999.md chat"}</dd>
                     </div>
                   </dl>
-                  <p className="studio-review-description">
+                  <p className="studio-review-description" translate={draft.description ? "no" : "yes"}>
                     {draft.description || "Add a description."}
                   </p>
                   {preparation.queue?.draftId === draft.id && (

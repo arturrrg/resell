@@ -104,6 +104,11 @@ const aliases = new Map(
     [...labels, key].map((label) => [fieldKey(label), key] as const),
   ),
 );
+const coreNames: Record<string, string> = { brand: "Brand", model: "Model", storage: "Storage", ram: "RAM", operatingSystem: "Operating system", deviceType: "Device type", color: "Colour", condition: "Condition", batteryHealth: "Battery health", batteryCapacity: "Battery capacity", sellerType: "Seller type", location: "Location" };
+export function specificationLabel(label: string) {
+  const key = aliases.get(fieldKey(label));
+  return (key && (coreNames[key] || names[key])) || label;
+}
 const propertyAliases: Record<string, string[]> = {
   batteryCapacity: ["batteryCapacityMah", "batteryCapacity"],
   location: ["location", "city"],

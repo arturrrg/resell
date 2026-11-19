@@ -5,9 +5,10 @@ import { getViewerSupabase } from "./supabase";
 import { publicInventoryItems, type PublicInventoryItem } from "./public-inventory-model";
 import { availablePublicInventory } from "./public-inventory-availability";
 import "./public-inventory.css";
+import { LanguagePicker } from "./language-picker";
+import { useLanguage, localeFor, translate } from "./i18n";
 
-const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
-const price = (item: PublicInventoryItem) => item.price === undefined ? "Price on request" : `${number.format(item.price)} ${item.currency}`.trim();
+const price = (item: PublicInventoryItem) => item.price === undefined ? "Price on request" : `${new Intl.NumberFormat(localeFor(), { maximumFractionDigits: 2 }).format(item.price)} ${item.currency}`.trim();
 const meta = (item: PublicInventoryItem) => [item.storage, item.color, item.condition, item.battery ? `${item.battery}% battery` : ""].filter(Boolean);
 
 const sortOptions = [{ value: "original", label: "Recently added" }, { value: "low", label: "Price: low to high" }, { value: "high", label: "Price: high to low" }];
@@ -34,6 +35,7 @@ function InventorySort({ value, onChange }: { value: string; onChange: (value: s
 export function InventoryCodeEntry() {
   const [value, setValue] = useState(""), [error, setError] = useState("");
   return <main className="viewer-site viewer-entry">
+    <LanguagePicker />
     <div className="viewer-code-panel">
       <a href="/" className="viewer-wordmark" aria-label="Resell home">Resell<span>.</span></a>
       <h1>View inventory.</h1>
@@ -61,15 +63,16 @@ function ProductGallery({ item }: { item: PublicInventoryItem }) {
 }
 
 function ProductDetail({ item, onClose }: { item: PublicInventoryItem; onClose: () => void }) {
+  useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { const node = dialog.current; const focused = document.activeElement as HTMLElement | null; const overflow = document.body.style.overflow; node?.showModal(); document.body.style.overflow = "hidden"; return () => { node?.close(); document.body.style.overflow = overflow; focused?.focus({ preventScroll: true }); }; }, []);
   const fallback = [["Brand", item.brand], ["Model", item.title], ["Storage", item.storage], ["Color", item.color], ["Condition", item.condition], ["Battery health", item.battery ? item.battery + "%" : ""]].filter(([, value]) => value).map(([label, value]) => ({ label, value }));
   return <dialog className="viewer-product-dialog" ref={dialog} aria-label={item.title} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) onClose(); } }}>
     <div className="viewer-detail-surface"><button className="viewer-detail-close" onClick={onClose} aria-label="Close device details"><X /></button><ProductGallery item={item} />
-      <div className="viewer-detail-copy"><span className="viewer-eyebrow">{item.brand || "Available device"}</span><h2>{item.title}</h2><p className="viewer-detail-meta">{meta(item).join(" · ")}</p><p className="viewer-detail-price">{price(item)}</p>
+      <div className="viewer-detail-copy"><span className="viewer-eyebrow">{item.brand || "Available device"}</span><h2 translate="no">{item.title}</h2><p className="viewer-detail-meta">{meta(item).join(" · ")}</p><p className="viewer-detail-price">{price(item)}</p>
         {item.sourceUrl && <a className="viewer-source-button" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">View on 999.md<ArrowUpRight /></a>}
         {(item.specs.length || fallback.length) > 0 && <section className="viewer-spec-section"><h3>Details</h3><dl>{(item.specs.length ? item.specs : fallback).map((spec, index) => <div key={spec.label + index}><dt>{spec.label}</dt><dd>{spec.value}</dd></div>)}</dl></section>}
-        {item.description && <section className="viewer-description"><h3>About this device</h3><p>{item.description}</p></section>}
+        {item.description && <section className="viewer-description"><h3>About this device</h3><p translate="no">{item.description}</p></section>}
         {item.seller && <p className="viewer-seller">Shared by <strong>{item.seller}</strong></p>}
       </div>
     </div>
@@ -77,6 +80,7 @@ function ProductDetail({ item, onClose }: { item: PublicInventoryItem; onClose: 
 }
 
 export function PublicInventory({ code, onExit }: { code: string; onExit?: () => void }) {
+  useLanguage();
   const [items, setItems] = useState<PublicInventoryItem[]>([]), [loaded, setLoaded] = useState(false), [error, setError] = useState(""), [query, setQuery] = useState(""), [brand, setBrand] = useState(""), [sort, setSort] = useState("original"), [selectedId, setSelectedId] = useState(""), [retry, setRetry] = useState(0);
   useEffect(() => {
     let stopped = false, pending = false;
@@ -100,19 +104,20 @@ export function PublicInventory({ code, onExit }: { code: string; onExit?: () =>
   }, [code, retry]);
   const brands = useMemo(() => [...new Set(items.map(item => item.brand).filter(Boolean))].sort(), [items]);
   const visible = useMemo(() => {
-    const result = items.filter(item => (!brand || item.brand === brand) && [item.title, item.brand, item.storage, item.color].join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+    const result = items.filter(item => (!brand || item.brand === brand) && [item.title, item.brand, item.storage, item.color, ...(["en", "ro", "ru"] as const).map(language => translate(item.color, language))].join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
     if (sort !== "original") result.sort((a, b) => { if (a.price === undefined) return 1; if (b.price === undefined) return -1; return sort === "low" ? a.price - b.price : b.price - a.price; });
     return result;
   }, [items, query, brand, sort]);
   const selected = items.find(item => item.id === selectedId);
   const exit = () => { if (onExit) onExit(); else location.hash = ""; };
   return <main className="viewer-site viewer-inventory">
+    <LanguagePicker />
     <header className="viewer-header"><button className="viewer-wordmark" onClick={exit} aria-label="Enter another inventory code">Resell<span>.</span></button><span className="viewer-readonly"><LockKeyhole />View only</span></header>
     <section className="viewer-collection-heading"><div className="viewer-collection-title"><h1>Inventory<span>.</span></h1><p>{loaded && !error ? `${items.length} ${items.length === 1 ? "device" : "devices"} available` : "Available devices"}</p></div><button className="viewer-back" onClick={exit}><ArrowLeft />Another inventory</button></section>
     {!error && <div className="viewer-collection-tools"><label className="viewer-search"><Search /><span className="viewer-sr-only">Search inventory</span><input placeholder="Search devices" value={query} onChange={event => setQuery(event.target.value)} />{query && <button onClick={() => setQuery("")} aria-label="Clear search"><X /></button>}</label>{brands.length > 1 && <nav className="viewer-brand-filters" aria-label="Filter by brand">{["", ...brands].map(value => <button aria-pressed={brand === value} onClick={() => setBrand(value)} key={value}>{brand === value && <Check />}{value || "All devices"}</button>)}</nav>}<InventorySort value={sort} onChange={setSort} /></div>}
     {error ? <section className="viewer-empty"><LockKeyhole /><h2>Unable to open inventory.</h2><p role="alert">{error}</p><button className="viewer-blue-button" onClick={() => setRetry(value => value + 1)}>Try again</button></section> : <section className="viewer-product-grid" aria-label="Available devices" aria-busy={!loaded}>
       {!loaded ? Array.from({ length: 6 }, (_, index) => <div className="viewer-skeleton" key={index}><div /><span /><span /></div>) : visible.map(item => <article className="viewer-product-card" key={item.id}>
-        <button className="viewer-card-open" onClick={() => setSelectedId(item.id)} aria-label={`View ${item.title}, ${price(item)}`}><div className="viewer-card-photo">{item.photos[0] ? <img src={item.photos[0]} alt={item.title} loading="lazy" decoding="async" /> : <ImageOff />}{item.photos.length > 1 && <span>{item.photos.length} photos</span>}</div><div className="viewer-card-copy"><span className="viewer-eyebrow">{item.brand || "Device"}</span><h2>{item.title}</h2><p>{meta(item).slice(0, 3).join(" · ")}</p><strong>{price(item)}</strong><span className="viewer-card-arrow" aria-hidden="true"><ArrowUpRight /></span></div></button>
+        <button className="viewer-card-open" onClick={() => setSelectedId(item.id)} aria-label={`View ${item.title}, ${price(item)}`}><div className="viewer-card-photo">{item.photos[0] ? <img src={item.photos[0]} alt={item.title} loading="lazy" decoding="async" /> : <ImageOff />}{item.photos.length > 1 && <span>{item.photos.length} photos</span>}</div><div className="viewer-card-copy"><span className="viewer-eyebrow">{item.brand || "Device"}</span><h2 translate="no">{item.title}</h2><p>{meta(item).slice(0, 3).join(" · ")}</p><strong>{price(item)}</strong><span className="viewer-card-arrow" aria-hidden="true"><ArrowUpRight /></span></div></button>
       </article>)}
     </section>}
     {loaded && !error && !visible.length && <section className="viewer-empty"><ImageOff /><h2>{items.length ? "No matching devices." : "More good things soon."}</h2><p>{items.length ? "Try a different search or brand." : "Available devices will appear here when they're shared."}</p>{!!items.length && <button className="viewer-blue-button" onClick={() => { setQuery(""); setBrand(""); }}>Clear filters</button>}</section>}

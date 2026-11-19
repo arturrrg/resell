@@ -26,6 +26,7 @@ import { devicePresets } from "./offers/device-presets";
 import { restoreDialogFocus } from "./pointer-intent";
 import { filterMenuPosition } from "./filter-layout";
 import { useBackAction } from "./back-navigation";
+import { useLanguage, translate } from "./i18n";
 
 function FilterChoice({
   name,
@@ -44,6 +45,7 @@ function FilterChoice({
   onOpen: (open: boolean) => void;
   onSelect: (value: string) => void;
 }) {
+  const language = useLanguage();
   const summary = useRef<HTMLElement>(null),
     menu = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<CSSProperties | null>(null);
@@ -51,7 +53,7 @@ function FilterChoice({
   const [query, setQuery] = useState("");
   const searchable = items.length > 8;
   const shown = open
-    ? items.filter(([, label]) => fieldKey(label).includes(fieldKey(query)))
+    ? items.filter(([, label]) => [label, translate(label, language)].some(value => fieldKey(value).includes(fieldKey(query))))
     : [];
   useLayoutEffect(() => {
     if (!open) setQuery("");

@@ -1,4 +1,5 @@
 import type { Device } from "./storage";
+import { translate } from "./i18n";
 import type { ExchangeRates } from "../shared/exchange";
 import {
   inventoryField,
@@ -107,6 +108,9 @@ function searchable(device: Device) {
         (key) => inventoryField(device, key),
       ),
       ...(device.characteristics || []).map((c) => c.value),
+      ...[device.color, device.condition, ...["deviceType", "sellerType"].map(key => inventoryField(device, key)), ...(device.characteristics || []).map(c => c.value)]
+        .filter((value): value is string => typeof value === "string")
+        .flatMap(value => [translate(value, "en"), translate(value, "ro"), translate(value, "ru")]),
     ]
       .join(" ")
       .toLocaleLowerCase();

@@ -16,6 +16,7 @@ import { includeExternalOffers, setIncludeExternalOffers } from "./offers/monito
 import { NavIcon } from "./nav-icon";
 import { MarketplaceConnection } from "./offers/marketplace-connection";
 import { marketplaceProfile } from "./offers/native";
+import { LanguagePicker } from "./language-picker";
 type CloudState = ReturnType<typeof useCloudSync>;
 export function hasAccount(cloud: CloudState) {
   return !!cloud.session && !cloud.session.user.is_anonymous;
@@ -239,11 +240,13 @@ export function Account({
   onOpenChange,
   icon,
   monitorError,
+  restoreMarketplace = false,
 }: {
   cloud: CloudState;
   onOpenChange?: (open: boolean) => void;
   icon?: ReactNode;
   monitorError?: string;
+  restoreMarketplace?: boolean;
 }) {
   const monitorOwner = cloud.workspace || cloud.session?.user.id || "";
   useEffect(() => {
@@ -269,6 +272,12 @@ export function Account({
     setProfilePhoto("");
     setNotice("");
   }, [cloud.session?.user.id]);
+  useEffect(() => {
+    if (restoreMarketplace) {
+      setOpen(true);
+      setMarketplaceOpen(true);
+    }
+  }, [restoreMarketplace]);
   if (!cloud.configured) return null;
   return (
     <div className="account-wrap" ref={root}>
@@ -286,6 +295,7 @@ export function Account({
           title={marketplaceOpen ? "Marketplace accounts" : hasAccount(cloud) ? "Account" : "Welcome to Resell"}
           hideTitle={marketplaceOpen}
           className={`account-settings-sheet${marketplaceOpen ? " marketplace-sheet" : ""}`}
+          headerActions={!hasAccount(cloud) ? <LanguagePicker iconOnly /> : undefined}
           onClose={() => marketplaceOpen ? setMarketplaceOpen(false) : change(false)}
         >
           <div className="account-panel" style={{ display: marketplaceOpen ? "none" : undefined }}>
@@ -320,12 +330,12 @@ export function Account({
                     )}
                   </span>
                   <div>
-                    <h3>
+                    <h3 translate={cloud.session?.user.user_metadata.full_name || cloud.session?.user.email ? "no" : "yes"}>
                       {cloud.session?.user.user_metadata.full_name ||
                         cloud.session?.user.email?.split("@")[0] ||
                         "Resell account"}
                     </h3>
-                    <p>{cloud.session?.user.email}</p>
+                    <p translate="no">{cloud.session?.user.email}</p>
                   </div>
                 </div>
                 <h3 className="account-group-title">Workspace</h3>
@@ -346,6 +356,7 @@ export function Account({
                       profileEmail={cloud.session?.user.email}
                       onProfilePhoto={setProfilePhoto}
                     />
+                  <LanguagePicker workspace />
                 </div>
                 {(notice || cloud.error) && (
                   <p className="account-notice" role="status">

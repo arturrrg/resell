@@ -1,12 +1,14 @@
+import { useLanguage, localeFor, translate } from "./i18n";
 import { memo, useMemo, useRef, useEffect, type PointerEvent } from "react";
 import { profitChartPosition, profitChartY } from "./profit-chart-position";
 import type { profitDashboard } from "./profit-dashboard";
-const money = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 export const ProfitChart = memo(function ProfitChart({
   view,
 }: {
   view: ReturnType<typeof profitDashboard>;
 }) {
+  const language = useLanguage();
+  const money = new Intl.NumberFormat(localeFor(language), { maximumFractionDigits: 0 });
   const svg = useRef<SVGSVGElement>(null),
     guide = useRef<SVGGElement>(null),
     dot = useRef<SVGCircleElement>(null);
@@ -19,7 +21,7 @@ export const ProfitChart = memo(function ProfitChart({
   const formatDate = (value: string) =>
     new Date(
       value.length === 7 ? value + "-15T12:00:00Z" : value + "T12:00:00Z",
-    ).toLocaleDateString("en-GB", {
+    ).toLocaleDateString(localeFor(language), {
       day: view.monthly ? undefined : "numeric",
       month: "short",
       year: view.monthly ? "2-digit" : undefined,
@@ -37,7 +39,7 @@ export const ProfitChart = memo(function ProfitChart({
       .map((p) => p.x.toFixed(2) + "," + p.y.toFixed(2))
       .join(" ");
     return { points, line, dates: view.points.map((p) => formatDate(p.date)) };
-  }, [view]);
+  }, [view, language]);
   const defaultDate = view.monthly
     ? "Monthly · up to 24 months"
     : "Daily · MDL";
@@ -46,7 +48,7 @@ export const ProfitChart = memo(function ProfitChart({
     frame.current = 0;
     selected.current = -1;
     if (guide.current) guide.current.style.visibility = "hidden";
-    if (date.current) date.current.textContent = defaultDate;
+    if (date.current) date.current.textContent = translate(defaultDate, language);
     if (amount.current)
       amount.current.textContent = money.format(view.total) + " MDL";
   };
@@ -87,7 +89,7 @@ export const ProfitChart = memo(function ProfitChart({
   useEffect(() => {
     reset();
     return () => cancelAnimationFrame(frame.current);
-  }, [view]);
+  }, [view, language]);
   return (
     <section className="sales-trend" aria-label="Recorded profit over time">
       <header>

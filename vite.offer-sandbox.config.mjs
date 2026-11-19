@@ -5,6 +5,8 @@ export default defineConfig({
   envDir: process.cwd(),
   publicDir: "public",
   base: "/",
+  resolve: { alias: { "@resell/localized": resolve("web/localized") } },
+  esbuild: { jsxImportSource: "@resell/localized" },
   build: {
     assetsInlineLimit: 0,
     outDir: "offer-dist",

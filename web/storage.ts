@@ -3,6 +3,7 @@ import {
   sourceRetryDelay,
   SOURCE_REQUEST_GAP,
 } from "../shared/refresh";
+import { profileAbsences } from "./offers/publication-presence";
 export const INVENTORY_CHANGED = "resell-inventory-changed";
 let broadcast: BroadcastChannel | undefined;
 function changesChannel() {
@@ -110,7 +111,10 @@ export function identity(value: string) {
 export async function mergeMonitoredOffers(owner: string, login: string, offers: import("../server/profile-offers").ProfileOffer[], complete: boolean, seenIds: string[], publishedIds: string[] = []) {
   const db = await databaseForOwner(owner);
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(["devices", "meta"], "readwrite"), store = tx.objectStore("devices"), request = store.getAll();
+    const tx = db.transaction(["devices", "meta"], "readwrite");
+    const store = tx.objectStore("devices"), meta = tx.objectStore("meta");
+    const account = login.toLowerCase(), monitorId = "monitor:" + account;
+    const previousCheck = meta.get(monitorId), request = store.getAll();
     let changed = false;
     request.onsuccess = () => {
       const existing = request.result as Device[], byAdvert = new Map(existing.map(d => [identity(d.listingUrl || ""), d]));
@@ -124,20 +128,27 @@ export async function mergeMonitoredOffers(owner: string, login: string, offers:
         if (!old?.photos?.length || imageIds(old.photos) !== imageIds(ad.photos)) next.photos = ad.photos;
         if (JSON.stringify(old) !== JSON.stringify(next)) { store.put(next); changed = true; }
       }
+      const seen = new Set(seenIds);
+      const previous: [string, number][] = previousCheck.result?.missing || [];
       if (complete) {
-        const seen = new Set(seenIds);
-        for (const d of existing) if (d.monitoredAccount?.toLowerCase() === login.toLowerCase() && d.monitorActive !== false && !seen.has(identity(d.listingUrl || ""))) { store.put({ ...d, monitorActive: false }); changed = true; }
-        // A listing can disappear before its first public-profile import. Persist
-        // that absence so the saved publication receipt cannot recreate its card.
-        for (const id of new Set(publishedIds)) {
-          if (!/^[1-9]\d{5,11}$/.test(id) || seen.has(id)) continue;
+        const candidates = new Set(publishedIds);
+        for (const d of existing) {
+          if (d.monitoredAccount?.toLowerCase() === account) candidates.add(identity(d.listingUrl || ""));
+        }
+        const checkedAt = Date.now();
+        const { pending, confirmed } = profileAbsences(candidates, seen, previous, checkedAt);
+        for (const id of confirmed) {
+          if (!/^[1-9]\d{5,11}$/.test(id)) continue;
           const old = byAdvert.get(id);
-          if (old?.monitoredAccount && old.monitoredAccount.toLowerCase() !== login.toLowerCase()) continue;
-          if (old?.monitorActive === false && old.monitoredAccount === login) continue;
+          if (old?.monitoredAccount && old.monitoredAccount.toLowerCase() !== account) continue;
+          if (old?.monitorActive === false) continue;
           store.put({ ...old, id: old?.id || crypto.randomUUID(), createdAt: old?.createdAt || new Date().toISOString(), listingUrl: "https://999.md/ro/" + id, monitoredAccount: login, monitorActive: false });
           changed = true;
         }
-        tx.objectStore("meta").put({ id: "monitor:" + login.toLowerCase(), checkedAt: new Date().toISOString() });
+        meta.put({ id: monitorId, checkedAt: new Date(checkedAt).toISOString(), missing: pending });
+      } else {
+        const pending = previous.filter(([id]) => !seen.has(id));
+        if (pending.length !== previous.length) meta.put({ ...previousCheck.result, missing: pending });
       }
     };
     tx.oncomplete = () => { if (changed) inventoryChanged(db); resolve(); };
@@ -371,11 +382,6 @@ export async function commitImport(listing: any, refreshId?: string) {
       );
       // A refresh finishing after deletion must not recreate the device.
       if (refreshId && !previous) return;
-      if (previous && !refreshId) {
-        tx.abort();
-        reject(Error("Already imported. Refresh the existing card."));
-        return;
-      }
       const source = {
         sellerName: listing.sellerName || "",
         sellerUrl: listing.sellerUrl || "",
@@ -484,7 +490,7 @@ export async function recordSourceFailure(
         sourceRefreshRetryAt: new Date(
           now + sourceRetryDelay(failures, unavailable, restricted),
         ).toISOString(),
-        ...(unavailable ? { sourceAvailability: "unavailable" } : {}),
+        ...(unavailable && !d.monitoredAccount ? { sourceAvailability: "unavailable" } : {}),
       });
       written = true;
       tx.objectStore('meta').delete('source-refresh-lease:'+id);

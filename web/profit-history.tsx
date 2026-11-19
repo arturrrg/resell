@@ -1,3 +1,4 @@
+import { useLanguage, localeFor } from "./i18n";
 import { useState, useMemo, memo } from "react";
 import { Undo2, ArrowUpRight, Package, TrendingUp } from "lucide-react";
 import type { Device } from "./storage";
@@ -6,10 +7,7 @@ import { saleTime } from "./sales";
 import { profitDashboard, type ProfitRange } from "./profit-dashboard";
 import { ProfitChart } from "./profit-chart";
 import "./sales-page.css";
-const moneyFormat = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 0,
-});
-const money = (n: number) => moneyFormat.format(n);
+const money = (n: number) => new Intl.NumberFormat(localeFor(), { maximumFractionDigits: 0 }).format(n);
 export const SalesPage = memo(function SalesPage({
   devices,
   onSaved,
@@ -21,6 +19,7 @@ export const SalesPage = memo(function SalesPage({
   onError: (message: string) => void;
   onUndoOffer?: (device: Device) => Promise<void>;
 }) {
+  const language = useLanguage();
   const [working, setWorking] = useState(""),
     [range, setRange] = useState<ProfitRange>("30d");
   const view = useMemo(() => profitDashboard(devices, range), [devices, range]);
@@ -111,7 +110,7 @@ export const SalesPage = memo(function SalesPage({
               <div className="sales-device-name">
                 <strong>{d.model || d.title || "Device"}</strong>
                 <span>
-                  {new Date(saleTime(d)).toLocaleDateString("en-GB", {
+                  {new Date(saleTime(d)).toLocaleDateString(localeFor(language), {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

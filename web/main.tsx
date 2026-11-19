@@ -41,6 +41,7 @@ import { DeviceCard } from "./device-card";
 import { useOfferInventory } from "./offers/offer-inventory";
 import { DeleteDialog } from "./confirm-dialog";
 import { Account, AuthGate, hasAccount, needsPassword } from "./account";
+import { LanguagePicker } from "./language-picker";
 import { useCloudSync } from "./cloud";
 import { useAutoRefresh } from "./auto-refresh";
 import { reconcileDevices } from "./sync-store";
@@ -176,6 +177,7 @@ function App() {
     [floatingHeader, pageSwipe],
   );
   const [overlayTab, setOverlayTab] = useState<"account" | null>(null);
+  const [restoreMarketplace, setRestoreMarketplace] = useState(false);
   const activeTab = overlayTab || page;
   useBackAction(
     page !== "inventory",
@@ -252,10 +254,20 @@ function App() {
   useEffect(() => {
     setDeleteTarget(null);
     setOverlayTab(null);
+    setRestoreMarketplace(false);
     setQuery("");
     setFilters({ ...emptyFilters });
     for (const controller of requests.current.values()) controller.abort();
   }, [cloud.workspace]);
+  useEffect(() => {
+    if (!accountReady || !introDone) return;
+    const url = new URL(location.href);
+    if (url.searchParams.get("marketplaceReturn") !== "accounts") return;
+    url.searchParams.delete("marketplaceReturn");
+    history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+    setOverlayTab("account");
+    setRestoreMarketplace(true);
+  }, [accountReady, introDone, cloud.workspace]);
   const importListing = useCallback(
     async (
       value: string,
@@ -406,9 +418,10 @@ function App() {
   if (!accountReady)
     return (
       <main className="auth-shell">
-        <div className="wordmark">
-          Resell<span className="brand-dot">.</span>
-        </div>
+        <header className="auth-header">
+          <div className="wordmark">Resell<span className="brand-dot">.</span></div>
+          <LanguagePicker iconOnly />
+        </header>
         <AuthGate cloud={cloud} />
       </main>
     );
@@ -469,6 +482,7 @@ function App() {
             <Account
               monitorError={offerInventory.monitorError}
               cloud={cloud}
+              restoreMarketplace={restoreMarketplace}
               onOpenChange={(open) => setOverlayTab(open ? "account" : null)}
               icon={
                 <NavIcon name="account" selected={activeTab === "account"} />

@@ -1,3 +1,5 @@
+import { publicationIsVisible } from "./offers/publication-presence";
+
 export type PublicInventoryItem = {
   id: string; title: string; brand: string; storage: string; color: string; condition: string;
   battery: string; price?: number; currency: string; description: string; seller: string;
@@ -10,7 +12,7 @@ function https(value: unknown) {
 }
 export function publicInventoryItems(value: unknown): PublicInventoryItem[] {
   if (!Array.isArray(value)) throw Error("This inventory could not be opened.");
-  return value.filter(row => row && typeof row.id === "string" && row.saleStatus !== "sold" && row.monitorActive !== false && String(row.sourceAvailability || "").toLowerCase() !== "unavailable").map(row => {
+  return value.filter(row => row && typeof row.id === "string" && row.saleStatus !== "sold" && publicationIsVisible(row)).map(row => {
     const source = https(row.listingUrl);
     let sourceUrl = "";
     if (source) { const url = new URL(source); if (["999.md", "www.999.md", "new.999.md"].includes(url.hostname) && /^\/(?:ro|ru|en)\/\d+\/?$/.test(url.pathname)) sourceUrl = source; }
