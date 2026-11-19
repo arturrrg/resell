@@ -74,7 +74,10 @@ test("Workspace picker uses a custom menu with keyboard navigation and dismissal
   const picker = page.locator(".account-settings-group .language-picker-trigger");
   await expect(picker).toBeVisible();
   await expect(page.locator(".language-picker select")).toHaveCount(0);
+  await page.keyboard.press("Tab");
   await picker.focus();
+  await expect(page.locator(".language-picker-workspace .language-picker-trigger:focus-visible")).toBeFocused();
+  await expect(picker).toHaveCSS("outline-style", "none");
   await picker.press("ArrowDown");
   const selected = page.getByRole("menuitemradio", { name: "English", exact: true });
   await expect(selected).toBeFocused();
