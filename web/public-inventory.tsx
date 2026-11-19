@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, ImageOff, LockKeyhole, Play, Search, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, ImageOff, LockKeyhole, Play, Search, SlidersHorizontal, X } from "lucide-react";
 import { viewingCode } from "./sharing";
 import { getViewerSupabase } from "./supabase";
 import { publicInventoryItems, type PublicInventoryItem } from "./public-inventory-model";
@@ -12,7 +12,7 @@ const price = (item: PublicInventoryItem) => item.price === undefined ? "Price o
 const meta = (item: PublicInventoryItem) => [item.storage, item.color, item.condition, item.battery ? `${item.battery}% battery` : ""].filter(Boolean);
 
 const sortOptions = [{ value: "original", label: "Recently added" }, { value: "low", label: "Price: low to high" }, { value: "high", label: "Price: high to low" }];
-function InventorySort({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function InventorySort({ value, onChange, iconOnly = false }: { value: string; onChange: (value: string) => void; iconOnly?: boolean }) {
   const [open, setOpen] = useState(false), root = useRef<HTMLDivElement>(null), trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -27,7 +27,7 @@ function InventorySort({ value, onChange }: { value: string; onChange: (value: s
       if (!open) { setOpen(true); requestAnimationFrame(() => root.current?.querySelector<HTMLButtonElement>("[aria-checked=true]")?.focus()); }
       else { const buttons = Array.from(root.current!.querySelectorAll<HTMLButtonElement>("[role=menuitemradio]")); const index = buttons.indexOf(document.activeElement as HTMLButtonElement); buttons[(index + (event.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length]?.focus(); }
     }
-  }}><button ref={trigger} className="viewer-sort-trigger" aria-label={`Sort devices: ${sortOptions.find(option => option.value === value)?.label}`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(current => !current)}>{sortOptions.find(option => option.value === value)?.label}<ChevronDown /></button>
+  }}><button ref={trigger} className="viewer-sort-trigger" aria-label={`Sort devices: ${sortOptions.find(option => option.value === value)?.label}`} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(current => !current)}>{iconOnly ? <SlidersHorizontal /> : <>{sortOptions.find(option => option.value === value)?.label}<ChevronDown /></>}</button>
     {open && <div className="viewer-sort-menu" role="menu" aria-label="Sort devices">{sortOptions.map(option => <button key={option.value} role="menuitemradio" aria-checked={value === option.value} onClick={() => { onChange(option.value); setOpen(false); trigger.current?.focus(); }}>{option.label}{value === option.value && <Check />}</button>)}</div>}
   </div>;
 }
@@ -37,6 +37,7 @@ export function InventoryCodeEntry() {
   return <main className="viewer-site viewer-entry">
     <header className="viewer-header"><a href="/" className="viewer-wordmark" aria-label="Resell home">Resell<span>.</span></a><LanguagePicker iconOnly /></header>
     <div className="viewer-code-panel">
+      <div className="viewer-entry-icon" aria-hidden="true"><LockKeyhole /></div>
       <h1>View inventory.</h1>
       <p>Enter the code shared with you.</p>
       <form onSubmit={event => { event.preventDefault(); const code = viewingCode(value); if (!code) { setError("Enter a valid inventory code or shared link."); return; } location.hash = "view=" + code; }}>
@@ -136,18 +137,42 @@ export function PublicInventory({ code, onExit, website = false }: { code: strin
   }, [items, query, brand, sort]);
   const selected = items.find(item => item.id === selectedId);
   const exit = () => { if (onExit) onExit(); else location.hash = ""; };
+  const search = <label className="viewer-search">
+    <Search />
+    <span className="viewer-sr-only">Search inventory</span>
+    <input placeholder={website ? "Search" : "Search devices"} value={query} onChange={event => setQuery(event.target.value)} />
+    {query && <button type="button" onClick={() => setQuery("")} aria-label="Clear search"><X /></button>}
+  </label>;
+  const sortControl = <InventorySort value={sort} onChange={setSort} iconOnly={website} />;
+  const filters = brands.length > 1 && <nav className="viewer-brand-filters" aria-label="Filter by brand">
+    {["", ...brands].map(value => <button aria-pressed={brand === value} onClick={() => setBrand(value)} key={value}>
+      {brand === value && <Check />}{value || "All devices"}
+    </button>)}
+  </nav>;
   return <main className="viewer-site viewer-inventory">
-    <LanguagePicker />
-    <header className="viewer-header"><button className="viewer-wordmark" onClick={exit} aria-label="Enter another inventory code">Resell<span>.</span></button>{website ? <div className="viewer-header-actions"><span className="viewer-readonly"><LockKeyhole />View only</span><LanguagePicker iconOnly /></div> : <span className="viewer-readonly"><LockKeyhole />View only</span>}</header>
-    <section className="viewer-collection-heading"><div className="viewer-collection-title"><h1>Inventory<span>.</span></h1><p>{loaded && !error ? `${items.length} ${items.length === 1 ? "device" : "devices"} available` : "Available devices"}</p></div><button className="viewer-back" onClick={exit}><ArrowLeft />Another inventory</button></section>
-    {!error && <div className="viewer-collection-tools"><label className="viewer-search"><Search /><span className="viewer-sr-only">Search inventory</span><input placeholder="Search devices" value={query} onChange={event => setQuery(event.target.value)} />{query && <button onClick={() => setQuery("")} aria-label="Clear search"><X /></button>}</label>{brands.length > 1 && <nav className="viewer-brand-filters" aria-label="Filter by brand">{["", ...brands].map(value => <button aria-pressed={brand === value} onClick={() => setBrand(value)} key={value}>{brand === value && <Check />}{value || "All devices"}</button>)}</nav>}<InventorySort value={sort} onChange={setSort} /></div>}
+    {!website && <LanguagePicker />}
+    <header className="viewer-header">
+      <button className="viewer-wordmark" onClick={exit} aria-label="Enter another inventory code">Resell<span>.</span></button>
+      {website ? <>
+        {!error && <div className="viewer-command-search">{search}{sortControl}</div>}
+        <LanguagePicker iconOnly />
+      </> : <span className="viewer-readonly"><LockKeyhole />View only</span>}
+    </header>
+    <section className="viewer-collection-heading">
+      <div className="viewer-collection-title"><h1>Inventory<span>.</span></h1><p>{loaded && !error ? `${items.length} ${items.length === 1 ? "device" : "devices"} available` : "Available devices"}</p></div>
+      {!website && <button className="viewer-back" onClick={exit}><ArrowLeft />Another inventory</button>}
+    </section>
+    {!error && (website ? filters : <div className="viewer-collection-tools">{search}{filters}{sortControl}</div>)}
     {error ? <section className="viewer-empty"><LockKeyhole /><h2>Unable to open inventory.</h2><p role="alert">{error}</p><button className="viewer-blue-button" onClick={() => setRetry(value => value + 1)}>Try again</button></section> : <section className="viewer-product-grid" aria-label="Available devices" aria-busy={!loaded}>
       {!loaded ? Array.from({ length: 6 }, (_, index) => <div className="viewer-skeleton" key={index}><div /><span /><span /></div>) : visible.map(item => <article className="viewer-product-card" key={item.id}>
         <button className="viewer-card-open" onClick={() => setSelectedId(item.id)} aria-label={`View ${item.title}, ${price(item)}`}><div className="viewer-card-photo">{item.photos[0] ? <img src={item.photos[0]} alt={item.title} loading="lazy" decoding="async" /> : <ImageOff />}{item.photos.length > 1 && <span>{item.photos.length} photos</span>}</div><div className="viewer-card-copy"><span className="viewer-eyebrow">{item.brand || "Device"}</span><h2 translate="no">{item.title}</h2><p>{meta(item).slice(0, 3).join(" · ")}</p><strong>{price(item)}</strong><span className="viewer-card-arrow" aria-hidden="true"><ArrowUpRight /></span></div></button>
       </article>)}
     </section>}
     {loaded && !error && !visible.length && <section className="viewer-empty"><ImageOff /><h2>{items.length ? "No matching devices." : "More good things soon."}</h2><p>{items.length ? "Try a different search or brand." : "Available devices will appear here when they're shared."}</p>{!!items.length && <button className="viewer-blue-button" onClick={() => { setQuery(""); setBrand(""); }}>Clear filters</button>}</section>}
-    <footer className="viewer-footer"><LockKeyhole />Shared for viewing. Always up to date.</footer>
+    {website ? <footer className="viewer-dock">
+      <span className="viewer-readonly"><LockKeyhole />View only</span>
+      <button className="viewer-back" onClick={exit}><ArrowLeft />Another inventory</button>
+    </footer> : <footer className="viewer-footer"><LockKeyhole />Shared for viewing. Always up to date.</footer>}
     {selected && <ProductDetail item={selected} loop={website} onClose={() => setSelectedId("")} />}
   </main>;
 }
