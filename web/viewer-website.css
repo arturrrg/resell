@@ -159,3 +159,58 @@
   .viewer-website .viewer-sort-trigger { font-size: 12px !important; }
 }
 .viewer-website .viewer-gallery-controls { color: #f5f5f7; }
+
+.viewer-website .viewer-media-slide > img[draggable="false"] {
+  touch-action: pan-y pinch-zoom;
+  cursor: grab;
+  user-select: none;
+}
+.viewer-website .viewer-media-slide > img:active { cursor: grabbing; }
+
+.viewer-website .viewer-collection-heading,
+.viewer-website .viewer-code-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #101625;
+}
+.viewer-website .viewer-collection-heading::before,
+.viewer-website .viewer-code-panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 175%, #89c9fb 0%, #396db6 30%, transparent 56%),
+    radial-gradient(ellipse at 110% -55%, #a98fd2 0%, #394077 40%, transparent 64%),
+    linear-gradient(115deg, #101625 15%, #1e345a 84%);
+}
+.viewer-website .viewer-back { background: #152643b0; }
+
+@media (min-width: 701px) {
+  .viewer-website .viewer-product-card:only-child { grid-column: 1 / -1; }
+  .viewer-website .viewer-product-card:only-child .viewer-card-open {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .viewer-website .viewer-product-card:only-child .viewer-card-photo {
+    aspect-ratio: auto;
+    min-height: clamp(320px, 29vw, 440px);
+    background: linear-gradient(145deg, #e9eef5, #d9e1ec);
+  }
+  .viewer-website .viewer-product-card:only-child .viewer-card-photo > img { padding: 20px; }
+  .viewer-website .viewer-product-card:only-child .viewer-card-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(28px, 4vw, 64px);
+  }
+  .viewer-website .viewer-product-card:only-child h2 {
+    font-size: clamp(32px, 3.4vw, 56px);
+    letter-spacing: -.055em;
+    overflow-wrap: anywhere;
+  }
+  .viewer-website .viewer-product-card:only-child .viewer-card-copy p { font-size: 15px; }
+  .viewer-website .viewer-product-card:only-child strong { font-size: 22px; }
+}

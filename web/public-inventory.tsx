@@ -49,6 +49,7 @@ export function InventoryCodeEntry() {
 
 function ProductGallery({ item, loop }: { item: PublicInventoryItem; loop: boolean }) {
   const track = useRef<HTMLDivElement>(null), [index, setIndex] = useState(0);
+  const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const media = [...item.photos.map(url => ({ kind: "image" as const, url })), ...item.videos];
   function move(next: number) {
     const node = track.current;
@@ -63,7 +64,24 @@ function ProductGallery({ item, loop }: { item: PublicInventoryItem; loop: boole
   return <div className="viewer-product-gallery">
     <div className="viewer-media-track" ref={track} onScroll={event => { const node = event.currentTarget; if (node.clientWidth) setIndex(Math.round(node.scrollLeft / node.clientWidth)); }} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); move(index + (event.key === "ArrowRight" ? 1 : -1)); } }} tabIndex={0} aria-label={`${item.title} photos and videos`}>
       {media.length ? media.map((medium, position) => <div className="viewer-media-slide" key={`${medium.url}-${position}`}>
-        {medium.kind === "image" ? <img src={medium.url} alt={`${item.title} · Photo ${position + 1}`} loading={position ? "lazy" : "eager"} /> : medium.kind === "video" ? <video src={position === index ? medium.url : undefined} poster={medium.poster} controls playsInline preload="metadata" /> : position === index ? <iframe src={medium.embedUrl} title={`${item.title} video`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen /> : <div className="viewer-media-placeholder"><Play /></div>}
+        {medium.kind === "image" ? <img {...(loop && media.length > 1 ? {
+          draggable: false,
+          onPointerDown(event: React.PointerEvent<HTMLImageElement>) {
+            if (!event.isPrimary || event.button !== 0) return;
+            drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+            event.currentTarget.setPointerCapture(event.pointerId);
+          },
+          onLostPointerCapture() { drag.current = null; },
+          onPointerUp(event: React.PointerEvent<HTMLImageElement>) {
+            const start = drag.current;
+            drag.current = null;
+            if (start?.id !== event.pointerId) return;
+            const dx = event.clientX - start.x;
+            if (Math.abs(dx) >= 36 && Math.abs(dx) > Math.abs(event.clientY - start.y)) {
+              move(index + (dx < 0 ? 1 : -1));
+            }
+          },
+        } : {})} src={medium.url} alt={`${item.title} · Photo ${position + 1}`} loading={position ? "lazy" : "eager"} /> : medium.kind === "video" ? <video src={position === index ? medium.url : undefined} poster={medium.poster} controls playsInline preload="metadata" /> : position === index ? <iframe src={medium.embedUrl} title={`${item.title} video`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen /> : <div className="viewer-media-placeholder"><Play /></div>}
       </div>) : <div className="viewer-media-slide viewer-media-placeholder"><ImageOff /><span>No photos available</span></div>}
     </div>
     {media.length > 1 && <div className="viewer-gallery-controls"><button aria-label="Previous photo" disabled={!loop && !index} onClick={() => move(index - 1)}><ChevronLeft /></button><span aria-live="polite">{index + 1}<span> / {media.length}</span></span><button aria-label="Next photo" disabled={!loop && index >= media.length - 1} onClick={() => move(index + 1)}><ChevronRight /></button></div>}
