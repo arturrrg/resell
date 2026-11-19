@@ -35,9 +35,8 @@ function InventorySort({ value, onChange }: { value: string; onChange: (value: s
 export function InventoryCodeEntry() {
   const [value, setValue] = useState(""), [error, setError] = useState("");
   return <main className="viewer-site viewer-entry">
-    <LanguagePicker />
+    <header className="viewer-header"><a href="/" className="viewer-wordmark" aria-label="Resell home">Resell<span>.</span></a><LanguagePicker iconOnly /></header>
     <div className="viewer-code-panel">
-      <a href="/" className="viewer-wordmark" aria-label="Resell home">Resell<span>.</span></a>
       <h1>View inventory.</h1>
       <p>Enter the code shared with you.</p>
       <form onSubmit={event => { event.preventDefault(); const code = viewingCode(value); if (!code) { setError("Enter a valid inventory code or shared link."); return; } location.hash = "view=" + code; }}>
@@ -48,27 +47,36 @@ export function InventoryCodeEntry() {
   </main>;
 }
 
-function ProductGallery({ item }: { item: PublicInventoryItem }) {
+function ProductGallery({ item, loop }: { item: PublicInventoryItem; loop: boolean }) {
   const track = useRef<HTMLDivElement>(null), [index, setIndex] = useState(0);
   const media = [...item.photos.map(url => ({ kind: "image" as const, url })), ...item.videos];
-  function move(next: number) { const node = track.current; if (node) node.scrollTo({ left: Math.max(0, Math.min(media.length - 1, next)) * node.clientWidth, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" }); }
+  function move(next: number) {
+    const node = track.current;
+    if (!node || media.length < 2) return;
+    const wraps = loop && (next < 0 || next >= media.length);
+    const target = wraps ? (next + media.length) % media.length : Math.max(0, Math.min(media.length - 1, next));
+    node.scrollTo({
+      left: target * node.clientWidth,
+      behavior: wraps || matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  }
   return <div className="viewer-product-gallery">
     <div className="viewer-media-track" ref={track} onScroll={event => { const node = event.currentTarget; if (node.clientWidth) setIndex(Math.round(node.scrollLeft / node.clientWidth)); }} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); move(index + (event.key === "ArrowRight" ? 1 : -1)); } }} tabIndex={0} aria-label={`${item.title} photos and videos`}>
       {media.length ? media.map((medium, position) => <div className="viewer-media-slide" key={`${medium.url}-${position}`}>
         {medium.kind === "image" ? <img src={medium.url} alt={`${item.title} · Photo ${position + 1}`} loading={position ? "lazy" : "eager"} /> : medium.kind === "video" ? <video src={position === index ? medium.url : undefined} poster={medium.poster} controls playsInline preload="metadata" /> : position === index ? <iframe src={medium.embedUrl} title={`${item.title} video`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen /> : <div className="viewer-media-placeholder"><Play /></div>}
       </div>) : <div className="viewer-media-slide viewer-media-placeholder"><ImageOff /><span>No photos available</span></div>}
     </div>
-    {media.length > 1 && <div className="viewer-gallery-controls"><button aria-label="Previous photo" disabled={!index} onClick={() => move(index - 1)}><ChevronLeft /></button><span aria-live="polite">{index + 1}<span> / {media.length}</span></span><button aria-label="Next photo" disabled={index >= media.length - 1} onClick={() => move(index + 1)}><ChevronRight /></button></div>}
+    {media.length > 1 && <div className="viewer-gallery-controls"><button aria-label="Previous photo" disabled={!loop && !index} onClick={() => move(index - 1)}><ChevronLeft /></button><span aria-live="polite">{index + 1}<span> / {media.length}</span></span><button aria-label="Next photo" disabled={!loop && index >= media.length - 1} onClick={() => move(index + 1)}><ChevronRight /></button></div>}
   </div>;
 }
 
-function ProductDetail({ item, onClose }: { item: PublicInventoryItem; onClose: () => void }) {
+function ProductDetail({ item, onClose, loop }: { item: PublicInventoryItem; onClose: () => void; loop: boolean }) {
   useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { const node = dialog.current; const focused = document.activeElement as HTMLElement | null; const overflow = document.body.style.overflow; node?.showModal(); document.body.style.overflow = "hidden"; return () => { node?.close(); document.body.style.overflow = overflow; focused?.focus({ preventScroll: true }); }; }, []);
   const fallback = [["Brand", item.brand], ["Model", item.title], ["Storage", item.storage], ["Color", item.color], ["Condition", item.condition], ["Battery health", item.battery ? item.battery + "%" : ""]].filter(([, value]) => value).map(([label, value]) => ({ label, value }));
   return <dialog className="viewer-product-dialog" ref={dialog} aria-label={item.title} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) onClose(); } }}>
-    <div className="viewer-detail-surface"><button className="viewer-detail-close" onClick={onClose} aria-label="Close device details"><X /></button><ProductGallery item={item} />
+    <div className="viewer-detail-surface"><button className="viewer-detail-close" onClick={onClose} aria-label="Close device details"><X /></button><ProductGallery item={item} loop={loop} />
       <div className="viewer-detail-copy"><span className="viewer-eyebrow">{item.brand || "Available device"}</span><h2 translate="no">{item.title}</h2><p className="viewer-detail-meta">{meta(item).join(" · ")}</p><p className="viewer-detail-price">{price(item)}</p>
         {item.sourceUrl && <a className="viewer-source-button" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">View on 999.md<ArrowUpRight /></a>}
         {(item.specs.length || fallback.length) > 0 && <section className="viewer-spec-section"><h3>Details</h3><dl>{(item.specs.length ? item.specs : fallback).map((spec, index) => <div key={spec.label + index}><dt>{spec.label}</dt><dd>{spec.value}</dd></div>)}</dl></section>}
@@ -79,7 +87,7 @@ function ProductDetail({ item, onClose }: { item: PublicInventoryItem; onClose: 
   </dialog>;
 }
 
-export function PublicInventory({ code, onExit }: { code: string; onExit?: () => void }) {
+export function PublicInventory({ code, onExit, website = false }: { code: string; onExit?: () => void; website?: boolean }) {
   useLanguage();
   const [items, setItems] = useState<PublicInventoryItem[]>([]), [loaded, setLoaded] = useState(false), [error, setError] = useState(""), [query, setQuery] = useState(""), [brand, setBrand] = useState(""), [sort, setSort] = useState("original"), [selectedId, setSelectedId] = useState(""), [retry, setRetry] = useState(0);
   useEffect(() => {
@@ -112,7 +120,7 @@ export function PublicInventory({ code, onExit }: { code: string; onExit?: () =>
   const exit = () => { if (onExit) onExit(); else location.hash = ""; };
   return <main className="viewer-site viewer-inventory">
     <LanguagePicker />
-    <header className="viewer-header"><button className="viewer-wordmark" onClick={exit} aria-label="Enter another inventory code">Resell<span>.</span></button><span className="viewer-readonly"><LockKeyhole />View only</span></header>
+    <header className="viewer-header"><button className="viewer-wordmark" onClick={exit} aria-label="Enter another inventory code">Resell<span>.</span></button>{website ? <div className="viewer-header-actions"><span className="viewer-readonly"><LockKeyhole />View only</span><LanguagePicker iconOnly /></div> : <span className="viewer-readonly"><LockKeyhole />View only</span>}</header>
     <section className="viewer-collection-heading"><div className="viewer-collection-title"><h1>Inventory<span>.</span></h1><p>{loaded && !error ? `${items.length} ${items.length === 1 ? "device" : "devices"} available` : "Available devices"}</p></div><button className="viewer-back" onClick={exit}><ArrowLeft />Another inventory</button></section>
     {!error && <div className="viewer-collection-tools"><label className="viewer-search"><Search /><span className="viewer-sr-only">Search inventory</span><input placeholder="Search devices" value={query} onChange={event => setQuery(event.target.value)} />{query && <button onClick={() => setQuery("")} aria-label="Clear search"><X /></button>}</label>{brands.length > 1 && <nav className="viewer-brand-filters" aria-label="Filter by brand">{["", ...brands].map(value => <button aria-pressed={brand === value} onClick={() => setBrand(value)} key={value}>{brand === value && <Check />}{value || "All devices"}</button>)}</nav>}<InventorySort value={sort} onChange={setSort} /></div>}
     {error ? <section className="viewer-empty"><LockKeyhole /><h2>Unable to open inventory.</h2><p role="alert">{error}</p><button className="viewer-blue-button" onClick={() => setRetry(value => value + 1)}>Try again</button></section> : <section className="viewer-product-grid" aria-label="Available devices" aria-busy={!loaded}>
@@ -122,6 +130,6 @@ export function PublicInventory({ code, onExit }: { code: string; onExit?: () =>
     </section>}
     {loaded && !error && !visible.length && <section className="viewer-empty"><ImageOff /><h2>{items.length ? "No matching devices." : "More good things soon."}</h2><p>{items.length ? "Try a different search or brand." : "Available devices will appear here when they're shared."}</p>{!!items.length && <button className="viewer-blue-button" onClick={() => { setQuery(""); setBrand(""); }}>Clear filters</button>}</section>}
     <footer className="viewer-footer"><LockKeyhole />Shared for viewing. Always up to date.</footer>
-    {selected && <ProductDetail item={selected} onClose={() => setSelectedId("")} />}
+    {selected && <ProductDetail item={selected} loop={website} onClose={() => setSelectedId("")} />}
   </main>;
 }
