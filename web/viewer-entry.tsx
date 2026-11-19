@@ -3,9 +3,15 @@ import { createRoot } from "react-dom/client";
 import { InventoryCodeEntry, PublicInventory } from "./public-inventory";
 import { viewingCode } from "./sharing";
 import { useLanguage, translate } from "./i18n";
+import { useExchangeRates } from "./exchange";
 import "./viewer-website.css";
 
 document.documentElement.classList.add("viewer-website");
+
+function SharedWebsiteInventory({ code }: { code: string }) {
+  const rates = useExchangeRates();
+  return <PublicInventory code={code} website rates={rates} />;
+}
 
 function ViewerWebsite() {
   const language = useLanguage();
@@ -13,6 +19,6 @@ function ViewerWebsite() {
   const read = () => viewingCode(new URLSearchParams(location.hash.slice(1)).get("view") || "");
   const [code, setCode] = useState(read);
   useEffect(() => { const changed = () => setCode(read()); window.addEventListener("hashchange", changed); return () => window.removeEventListener("hashchange", changed); }, []);
-  return code ? <PublicInventory code={code} website /> : <InventoryCodeEntry />;
+  return code ? <SharedWebsiteInventory code={code} /> : <InventoryCodeEntry />;
 }
 createRoot(document.getElementById("root")!).render(<ViewerWebsite />);
