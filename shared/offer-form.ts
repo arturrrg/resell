@@ -22,6 +22,15 @@ export function normalizedOption(value: string) {
     .replace(/\bmun\.?(?=\s|$)/g, "")
     .replace(/[^\p{L}\p{N}€$]/gu, "");
 }
+
+export function marketplaceLocation(value: string) {
+  const spelling = value.trim().normalize("NFKD").replace(/\p{M}/gu, "");
+  // Older imports can contain replacement characters where the two accents were.
+  return /^chi[s?\uFFFD]in[a?\uFFFD]u(?:\s+mun\.?)?$/i.test(spelling)
+    ? "Chișinău"
+    : value;
+}
+
 export function mobilePicker(root: ParentNode, id: string) {
   const exact = root.querySelector<HTMLElement>(
     `[data-testid="modal-wrapper-${id}"][role="dialog"][aria-modal="true"]`,
@@ -540,7 +549,7 @@ export async function fillOfferForm(
   await select("1265", "Storage", [draft.storage]);
   await select("1266", "RAM", [draft.ram]);
   await select("1422", "Color", [draft.color]);
-  await select("7", "Location", [draft.location]);
+  await select("7", "Location", [marketplaceLocation(draft.location)]);
   if (!root.querySelector('button.mobile__option__selector[name="2.value"]'))
     await select(
       "2.unit",
