@@ -40,7 +40,6 @@ import { Filters } from "./filter-bar";
 import { filterInventory, emptyFilters } from "./filters";
 import { DeviceCard } from "./device-card";
 import { useOfferInventory } from "./offers/offer-inventory";
-import { MissingInventorySales } from "./offers/missing-offer-reminders";
 import { DeleteDialog } from "./confirm-dialog";
 import { Account, AuthGate, hasAccount, needsPassword } from "./account";
 import { LanguagePicker } from "./language-picker";
@@ -521,7 +520,6 @@ function App() {
           }
           inert={mobileWorkspace && page !== "inventory"}
         >
-          <MissingInventorySales key={scope} scope={scope} drafts={offerInventory.drafts} devices={devices} external={offerInventory.external} verifying={offerInventory.verifying} canPrompt={page === "inventory" && !overlayTab && !deleteTarget} onSaved={refreshInventory} />
           {offerInventory.verifying ? (
             <div className="app-page-loading" role="status" aria-label="Checking 999.md offers">
               <LoaderCircle className="spinning" />
@@ -584,6 +582,8 @@ function App() {
                 onCreateHandled={() => setCreationDraft(null)}
                 toolbarHost={mobileWorkspace ? offersToolbarHost : null}
                 devices={devices}
+                missingDevices={offerInventory.missingDevices}
+                onInventorySaved={refreshInventory}
                 key={cloud.workspace || "local"}
                 scope={cloud.workspace || "local"}
                 accountId={

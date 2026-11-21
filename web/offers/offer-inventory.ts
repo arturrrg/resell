@@ -7,13 +7,14 @@ import { reconcileOfferDrafts } from "./draft-view";
 import { inNativeApp, marketplaceProfile } from "./native";
 import { includeExternalOffers, watchMonitorSettings } from "./monitor-settings";
 import { confirmedUnavailableAdverts, publicationIsVisible } from "./publication-presence";
+import { missingMonitoredDevices } from "./missing-publications";
 export function useOfferInventory(owner: string | null, devices: Device[], enabled: boolean, refreshInventory: () => Promise<void>) {
   const [drafts, setDrafts] = useState<OfferDraft[]>([]), [external, setExternal] = useState(false);
   const [monitorError, setMonitorError] = useState("");
   const [verifiedOwner, setVerifiedOwner] = useState<string | null>(null);
   const verified = useRef<string | null>(null);
   const [revision, setRevision] = useState(0);
-  const live = useRef({ drafts, external, devices }); live.current = { drafts, external, devices };
+  const live = useRef({ drafts, devices }); live.current = { drafts, devices };
   const objectUrls = useRef(new Map<Blob, string>());
   const photoLists = useRef(new WeakMap<OfferDraft["photos"], string[]>());
   useEffect(() => {
@@ -162,7 +163,7 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       }
     }
     if (external) for (const d of devices) { const id = identity(d.listingUrl || ""); if (id && d.monitoredAccount && publicationIsVisible(d) && d.saleStatus !== "sold") inventory.set(id, d); }
-    return { inventory: [...inventory].filter(([id]) => !soldAdverts.has(id)).map(([,d]) => d), sales: [...devices.filter(d => d.saleStatus === "sold"), ...sales] };
+    return { inventory: [...inventory].filter(([id]) => !soldAdverts.has(id)).map(([,d]) => d), sales: [...devices.filter(d => d.saleStatus === "sold"), ...sales], missingDevices: missingMonitoredDevices(drafts, devices, external) };
   }, [drafts, devices, external]);
   const undoSale = useCallback(async (device: Device) => {
     if (!owner || !device.offerDraftId) return;
@@ -170,5 +171,5 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
     await reload();
   }, [owner, reload]);
   const verifying = !!owner && enabled && inNativeApp() && verifiedOwner !== owner;
-  return { ...view, drafts, external, verifying, undoSale, monitorError };
+  return { ...view, verifying, undoSale, monitorError };
 }

@@ -295,6 +295,8 @@ export default function OfferStudio({
   scope,
   accountId,
   devices = [],
+  missingDevices = [],
+  onInventorySaved,
   isVisible = true,
   toolbarHost,
   creationDraft = null,
@@ -304,6 +306,8 @@ export default function OfferStudio({
   scope: string;
   accountId?: string;
   devices?: Device[];
+  missingDevices?: Device[];
+  onInventorySaved?: () => Promise<void>;
   isVisible?: boolean;
   toolbarHost?: HTMLElement | null;
   creationDraft?: OfferDraft | null;
@@ -951,7 +955,15 @@ export default function OfferStudio({
       />
       {!draft ? (
         <>
-          <MissingOfferReminders drafts={list} devices={devices} onConfirm={closeMissingOffer} excludedDraftId={preparation.queue && ["ready", "waiting"].includes(preparation.queue.phase) ? preparation.queue.draftId : undefined} />
+          <MissingOfferReminders
+            drafts={list}
+            devices={devices}
+            missingDevices={missingDevices}
+            onConfirm={closeMissingOffer}
+            onSaved={onInventorySaved}
+            excludedDraftId={preparation.queue && ["ready", "waiting"].includes(preparation.queue.phase) ? preparation.queue.draftId : undefined}
+            separate={loaded && list.length > 0}
+          />
           {notice && (
             <p className="studio-notice" role="status">
               {notice}

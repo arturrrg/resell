@@ -378,6 +378,7 @@ Publishes on this account, then returns to Inventory.|Publică pe acest cont, ap
 Price by account|Preț pe cont|Цена для аккаунтов
 Price for {0}|Preț pentru {0}|Цена для {0}
 Offer no longer on 999.md|Oferta nu mai este pe 999.md|Объявления больше нет на 999.md
+Removed from 999.md|Eliminate de pe 999.md|Сняты с 999.md
 Checking 999.md offers|Se verifică ofertele de pe 999.md|Проверка объявлений на 999.md
 If you sold this device, record the profit.|Dacă ai vândut dispozitivul, înregistrează profitul.|Если вы продали устройство, укажите прибыль.
 Record sale|Înregistrează vânzarea|Записать продажу

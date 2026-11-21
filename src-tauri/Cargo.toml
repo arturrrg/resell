@@ -1,6 +1,6 @@
 [package]
 name = "resell"
-version = "1.6.58"
+version = "1.6.59"
 description = "Resell private reseller workspace"
 authors = ["Resell"]
 edition = "2021"
