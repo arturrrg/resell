@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { profileAbsences, publicationIsVisible } from "../web/offers/publication-presence";
+import { LISTING_UNAVAILABLE } from "../shared/refresh";
+import { confirmedUnavailableAdverts, profileAbsences, publicationIsVisible } from "../web/offers/publication-presence";
 
 test("a cached profile miss cannot hide a published advert after restart", () => {
   const candidates = ["123456", "234567", "345678"];
@@ -13,10 +14,31 @@ test("a cached profile miss cannot hide a published advert after restart", () =>
   assert.deepEqual(fresh.pending, [["345678", 121_000]]);
 });
 
-test("the profile monitor controls visibility for marketplace receipts", () => {
-  const failedRefresh = { sourceAvailability: "unavailable" };
-  assert.equal(publicationIsVisible(failedRefresh, true), true);
-  assert.equal(publicationIsVisible({ ...failedRefresh, monitoredAccount: "seller" }), true);
-  assert.equal(publicationIsVisible({ monitorActive: false }, true), false);
-  assert.equal(publicationIsVisible(failedRefresh), false);
+test("a confirmed missing listing hides even when its profile still shows it", () => {
+  assert.equal(publicationIsVisible({ monitorActive: true, sourceAvailability: "unavailable" }), false);
+  assert.equal(publicationIsVisible({ monitorActive: false }), false);
+  assert.equal(publicationIsVisible({ monitorActive: true, sourceAvailability: "Available" }), true);
+  assert.equal(publicationIsVisible(), true);
+});
+
+test("a first profile miss can be confirmed by a typed importer 404", async () => {
+  const unavailable = await confirmedUnavailableAdverts(
+    ["105967410", "234567", "345678"],
+    "https://resell.example",
+    new AbortController().signal,
+    async (input, options) => {
+      assert.equal(input, "https://resell.example/api/import-999");
+      const { url, refresh } = JSON.parse(String(options?.body));
+      assert.equal(refresh, true);
+      if (url.endsWith("/105967410"))
+        return Response.json({ code: LISTING_UNAVAILABLE }, { status: 404 });
+      if (url.endsWith("/234567"))
+        return Response.json({ error: "Missing route" }, { status: 404 });
+      return Response.json({ error: "Marketplace busy" }, { status: 429 });
+    },
+  );
+  assert.deepEqual([...unavailable], ["105967410"]);
+  const first = profileAbsences(["105967410", "234567", "345678"], new Set(), [], 1_000, unavailable);
+  assert.deepEqual([...first.confirmed], ["105967410"]);
+  assert.deepEqual(first.pending, [["234567", 1_000], ["345678", 1_000]]);
 });

@@ -62,6 +62,7 @@ export type Device = {
   soldAt?: string;
   soldProfit?: number;
   sourceCheckedAt?: string;
+  sourceAvailability?: string;
   sourceLastFailure?: string;
   sourceLastFailureAt?: string;
   sourceRefreshError?: string;
@@ -108,7 +109,7 @@ export function identity(value: string) {
     return "";
   }
 }
-export async function mergeMonitoredOffers(owner: string, login: string, offers: import("../server/profile-offers").ProfileOffer[], complete: boolean, seenIds: string[], publishedIds: string[] = []) {
+export async function mergeMonitoredOffers(owner: string, login: string, offers: import("../server/profile-offers").ProfileOffer[], complete: boolean, seenIds: string[], publishedIds: string[], unavailableIds: ReadonlySet<string> = new Set()) {
   const db = await databaseForOwner(owner);
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(["devices", "meta"], "readwrite");
@@ -123,7 +124,12 @@ export async function mergeMonitoredOffers(owner: string, login: string, offers:
         const next: Device = { ...old, id: old?.id || crypto.randomUUID(), createdAt: old?.createdAt || new Date().toISOString(), title: ad.title, listingUrl: "https://999.md/ro/" + ad.advertId, sellerName: ad.login, sellerUrl: "https://999.md/ro/profile/" + encodeURIComponent(ad.login), monitoredAccount: login, monitorActive: true };
         next.sourcePrice = ad.price;
         next.currency = ad.currency;
-        next.sourceAvailability = "Available";
+        if (old?.sourceAvailability !== "unavailable") next.sourceAvailability = "Available";
+        else if (old.monitorActive === false) {
+          // A returning offer needs a fresh detail check before it can be shown.
+          next.sourceCheckedAt = "";
+          next.sourceRefreshRetryAt = "";
+        }
         const imageIds = (values?: string[]) => (values || []).map(url => url.split("/").at(-1)?.split("?")[0]).join("|");
         if (!old?.photos?.length || imageIds(old.photos) !== imageIds(ad.photos)) next.photos = ad.photos;
         if (JSON.stringify(old) !== JSON.stringify(next)) { store.put(next); changed = true; }
@@ -136,13 +142,21 @@ export async function mergeMonitoredOffers(owner: string, login: string, offers:
           if (d.monitoredAccount?.toLowerCase() === account) candidates.add(identity(d.listingUrl || ""));
         }
         const checkedAt = Date.now();
-        const { pending, confirmed } = profileAbsences(candidates, seen, previous, checkedAt);
+        const { pending, confirmed } = profileAbsences(candidates, seen, previous, checkedAt, unavailableIds);
         for (const id of confirmed) {
           if (!/^[1-9]\d{5,11}$/.test(id)) continue;
           const old = byAdvert.get(id);
           if (old?.monitoredAccount && old.monitoredAccount.toLowerCase() !== account) continue;
           if (old?.monitorActive === false) continue;
-          store.put({ ...old, id: old?.id || crypto.randomUUID(), createdAt: old?.createdAt || new Date().toISOString(), listingUrl: "https://999.md/ro/" + id, monitoredAccount: login, monitorActive: false });
+          store.put({
+            ...old,
+            id: old?.id || crypto.randomUUID(),
+            createdAt: old?.createdAt || new Date().toISOString(),
+            listingUrl: "https://999.md/ro/" + id,
+            monitoredAccount: login,
+            monitorActive: false,
+            ...(unavailableIds.has(id) && { sourceAvailability: "unavailable" }),
+          });
           changed = true;
         }
         meta.put({ id: monitorId, checkedAt: new Date(checkedAt).toISOString(), missing: pending });
@@ -468,6 +482,7 @@ export async function recordSourceFailure(
   db: IDBDatabase,
   id: string,
   message: string,
+  unavailable: boolean,
   now = Date.now(),
 ) {
   return new Promise<void>((resolve, reject) => {
@@ -479,7 +494,6 @@ export async function recordSourceFailure(
       const d = r.result as Device | undefined;
       if (!d) return;
       const failures = (d.sourceRefreshFailures || 0) + 1,
-        unavailable = /advert could not be found/i.test(message),
         restricted = /too many imports|declined|browser verification/i.test(message);
       store.put({
         ...d,
@@ -490,7 +504,7 @@ export async function recordSourceFailure(
         sourceRefreshRetryAt: new Date(
           now + sourceRetryDelay(failures, unavailable, restricted),
         ).toISOString(),
-        ...(unavailable && !d.monitoredAccount ? { sourceAvailability: "unavailable" } : {}),
+        ...(unavailable ? { sourceAvailability: "unavailable" } : {}),
       });
       written = true;
       tx.objectStore('meta').delete('source-refresh-lease:'+id);

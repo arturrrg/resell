@@ -1,6 +1,7 @@
 import type { Device } from "../web/storage";
 export const SOURCE_REFRESH_INTERVAL = 15 * 60_000;
 export const SOURCE_REQUEST_GAP = 5_000;
+export const LISTING_UNAVAILABLE = "listing_unavailable";
 export function sourceIsDue(device: Device, now: number) {
   const checked = Date.parse(device.sourceCheckedAt || "");
   const retry = Date.parse(device.sourceRefreshRetryAt || "");

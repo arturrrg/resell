@@ -15,6 +15,7 @@ import "./interaction-refinements.css";
 import "./auth-layout.css";
 const OfferStudio = lazy(() => import("./offers/offer-studio"));
 import { newOffer, type OfferDraft } from "../shared/offer-draft";
+import { LISTING_UNAVAILABLE } from "../shared/refresh";
 import { CollectionEmpty } from "./collection-empty";
 import { SalesPage } from "./profit-history";
 import { SharedInventory } from "./share-inventory";
@@ -302,6 +303,7 @@ function App() {
       else setBusy(true);
       if (!options.automatic) setMessage("");
       let savedDatabase: IDBDatabase | undefined;
+      let unavailable = false;
       try {
         savedDatabase = await database();
         const base = (import.meta as any).env.VITE_API_BASE_URL || "";
@@ -334,8 +336,10 @@ function App() {
           }
         } else result = await response.json();
         if (!result) throw Error("Import connection ended. Please retry.");
-        if (!response.ok || !result.ok)
+        if (!response.ok || !result.ok) {
+          unavailable = result.code === LISTING_UNAVAILABLE;
           throw Error(result.error || "Import failed.");
+        }
         if (controller.signal.aborted || savedDatabase !== (await database()))
           return;
         if (!refresh && result.listing.images?.[0])
@@ -351,7 +355,7 @@ function App() {
               : (e as Error).message;
           if (refresh && savedDatabase === (await database())) {
             try {
-              await recordSourceFailure(savedDatabase!, refresh.id, detail);
+              await recordSourceFailure(savedDatabase!, refresh.id, detail, unavailable);
               await refreshInventory();
             } catch {}
           }
@@ -374,7 +378,9 @@ function App() {
   useAutoRefresh({
     enabled: accountReady,
     workspace: cloud.workspace,
-    accept: device => offerInventory.inventory.some(d => d.id === device.id),
+    accept: device =>
+      (device.monitorActive === true && device.sourceAvailability === "unavailable") ||
+      offerInventory.inventory.some(d => d.id === device.id),
     busy: () => new Set(requests.current.keys()),
     refresh: (device, signal) =>
       importListing(device.listingUrl!, device, { automatic: true, signal }),

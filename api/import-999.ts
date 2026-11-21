@@ -6,6 +6,7 @@ import {
   sellerFromDocument,
 } from "../server/extraction.js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { LISTING_UNAVAILABLE } from "../shared/refresh.js";
 
 const HOSTS = new Set(["999.md", "www.999.md", "new.999.md"]);
 const IMAGE_HOSTS = new Set([
@@ -16,6 +17,12 @@ const IMAGE_HOSTS = new Set([
 ]);
 const MAX_HTML = 4 * 1024 * 1024;
 const MAX_IMAGES = Number.MAX_SAFE_INTEGER;
+
+class ListingUnavailableError extends Error {
+  constructor() {
+    super("That 999.md advert could not be found. It may have expired or been removed.");
+  }
+}
 
 const FIELD_ALIASES: Record<string, string[]> = {
   deviceType: [
@@ -235,6 +242,8 @@ export async function fetchHtml(
         throw new Error("999.md redirected outside its public advert domain.");
       }
       current = safeListingUrl(next.href);
+      if (current.pathname.split("/")[2] !== start.pathname.split("/")[2])
+        throw new Error("999.md redirected to a different advert.");
       continue;
     }
     if (!response.ok) {
@@ -243,10 +252,8 @@ export async function fetchHtml(
         throw new Error(
           `999.md declined the automated page request (HTTP ${response.status}). Open the advert normally and complete any missing details manually.`,
         );
-      if (response.status === 404)
-        throw new Error(
-          "That 999.md advert could not be found. It may have expired or been removed.",
-        );
+      if (response.status === 404 || response.status === 410)
+        throw new ListingUnavailableError();
       throw new Error(`999.md returned HTTP ${response.status}.`);
     }
     const contentType = response.headers.get("content-type") || "";
@@ -1281,13 +1288,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       error instanceof Error
         ? error.message
         : "Could not read this public 999.md advert.";
-    const status = /valid|https|individual|category|Paste/i.test(message)
+    const unavailable = error instanceof ListingUnavailableError;
+    const failure = { ok: false, error: message, ...(unavailable && { code: LISTING_UNAVAILABLE }) };
+    const status = unavailable ? 404 : /valid|https|individual|category|Paste/i.test(message)
       ? 400
       : 502;
     if (streamed && res.headersSent) {
-      emit("failed", { ok: false, error: message });
+      emit("failed", failure);
       return res.end();
     }
-    return res.status(status).json({ ok: false, error: message });
+    return res.status(status).json(failure);
   }
 }

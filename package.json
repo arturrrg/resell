@@ -1,7 +1,7 @@
 {
   "name": "resell",
   "private": true,
-  "version": "1.6.55",
+  "version": "1.6.56",
   "engines": {
     "node": ">=22.12"
   },

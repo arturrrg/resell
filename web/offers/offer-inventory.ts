@@ -6,12 +6,12 @@ import { savedDrafts, watchOfferChanges, changeDraftState } from "./draft-store"
 import { reconcileOfferDrafts } from "./draft-view";
 import { inNativeApp, marketplaceProfile } from "./native";
 import { includeExternalOffers, watchMonitorSettings } from "./monitor-settings";
-import { publicationIsVisible } from "./publication-presence";
+import { confirmedUnavailableAdverts, publicationIsVisible } from "./publication-presence";
 export function useOfferInventory(owner: string | null, devices: Device[], enabled: boolean) {
   const [drafts, setDrafts] = useState<OfferDraft[]>([]), [external, setExternal] = useState(false);
   const [monitorError, setMonitorError] = useState("");
   const [revision, setRevision] = useState(0);
-  const live = useRef({ drafts, external }); live.current = { drafts, external };
+  const live = useRef({ drafts, external, devices }); live.current = { drafts, external, devices };
   const objectUrls = useRef(new Map<Blob, string>());
   const photoLists = useRef(new WeakMap<OfferDraft["photos"], string[]>());
   useEffect(() => {
@@ -47,16 +47,17 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       if (running || controller.signal.aborted || document.visibilityState === "hidden" || Date.now() - last < 60000) return;
       running = true; last = Date.now();
       try {
-        const profile = await marketplaceProfile(owner!, true), { drafts, external } = live.current;
+        const base = (import.meta as any).env.VITE_API_BASE_URL || "";
+        if (base && !base.startsWith("https://")) throw Error("Marketplace updates require HTTPS.");
+        const profile = await marketplaceProfile(owner!, true), { drafts, external, devices } = live.current;
         const prepared = new Set(drafts.flatMap(d => d.publications?.map(p => p.advertId) || []));
+        const byAdvert = new Map(devices.map(d => [identity(d.listingUrl || ""), d]));
         for (const account of profile.accounts) {
           const login = account.username || (!account.login.includes("@") ? account.login : "");
           if (!login || (!external && !drafts.some(d => d.publications?.some(p => p.accountId === account.id)))) continue;
           const publishedIds = drafts.flatMap(d => (d.publications || []).filter(p => p.accountId === account.id && p.state === "published").map(p => p.advertId));
           const seen = new Set<string>(); let complete = false, expectedTotal = -1, consistent = true;
           for (let skip = 0; skip <= 20000; skip += 50) {
-            const base = (import.meta as any).env.VITE_API_BASE_URL || "";
-            if (base && !base.startsWith("https://")) throw Error("Marketplace updates require HTTPS.");
             const response = await fetch(base + "/api/profile-offers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ login, skip }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) });
             const value = await response.json();
             if (!response.ok || !value.ok || !Array.isArray(value.offers) || !Number.isSafeInteger(value.total)) throw Error(value.error || "Could not update public offers.");
@@ -67,7 +68,18 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
             const lastPage = skip + 50 >= value.total;
             complete = lastPage && consistent && seen.size === value.total;
             controller.signal.throwIfAborted();
-            await mergeMonitoredOffers(owner!, login, external ? offers : offers.filter(ad => prepared.has(ad.advertId)), complete, [...seen], publishedIds);
+            let unavailableIds: ReadonlySet<string> | undefined;
+            if (complete) {
+              const candidates = new Set(publishedIds);
+              for (const [id, device] of byAdvert) {
+                if (id && device.monitoredAccount?.toLowerCase() === login.toLowerCase())
+                  candidates.add(id);
+              }
+              const missing = [...candidates].filter(id => !seen.has(id) && publicationIsVisible(byAdvert.get(id)));
+              if (missing.length)
+                unavailableIds = await confirmedUnavailableAdverts(missing, base, controller.signal);
+            }
+            await mergeMonitoredOffers(owner!, login, external ? offers : offers.filter(ad => prepared.has(ad.advertId)), complete, [...seen], publishedIds, unavailableIds);
             if (lastPage) break;
             if (controller.signal.aborted) return;
           }
@@ -93,7 +105,7 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       }
       for (const p of draft.publications || []) {
         const source = byAdvert.get(p.advertId);
-        if (!publicationIsVisible(source, true)) continue;
+        if (!publicationIsVisible(source)) continue;
         const photos = () => { let list = photoLists.current.get(draft.photos); if (!list) { list = draft.photos.map(p => { let url = objectUrls.current.get(p.blob); if (!url) { url = URL.createObjectURL(p.blob); objectUrls.current.set(p.blob, url); } return url; }); photoLists.current.set(draft.photos, list); } return list; };
         inventory.set(p.advertId, source || { id: "offer:" + p.advertId, offerDraftId: draft.id, title: draft.title, model: draft.model, brand: draft.brand, storage: draft.storage, color: draft.color, condition: draft.condition, batteryHealth: draft.batteryHealth, sourcePrice: Number((p.price ?? draft.price).replace(",", ".")), currency: p.currency ?? draft.currency, listingDescription: draft.description, photos: photos(), listingUrl: "https://999.md/ro/" + p.advertId, sellerName: p.login, sourceAvailability: p.state === "submitted" ? "Under review" : "Available" });
       }
