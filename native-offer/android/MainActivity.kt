@@ -1,6 +1,7 @@
 package md.maison.reseller.offersandbox
 
 import android.os.Bundle
+import android.net.Uri
 import android.graphics.Color
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -71,7 +72,23 @@ class MainActivity : TauriActivity(), OfferCameraHost {
     CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
   }
 
+  private fun notifyActivityVisibility(foreground: Boolean) {
+    val view = appWebView ?: return
+    val url = Uri.parse(view.url ?: return)
+    if (url.host != "tauri.localhost" || url.scheme !in listOf("http", "https")) return
+    view.evaluateJavascript("""
+      document.documentElement.toggleAttribute('data-resell-background', ${!foreground});
+      window.dispatchEvent(new Event('resell:activity-visibility'));
+    """.trimIndent(), null)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    notifyActivityVisibility(true)
+  }
+
   override fun onPause() {
+    notifyActivityVisibility(false)
     CookieManager.getInstance().flush()
     super.onPause()
   }

@@ -47,10 +47,12 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
     if (!owner || !enabled || !inNativeApp()) return;
     const scope = owner;
     const controller = new AbortController();
-    let running = false, checkAgain = false, last = 0, foreground = 0;
+    const isBackground = () => document.visibilityState === "hidden" ||
+      document.documentElement.hasAttribute("data-resell-background");
+    let running = false, checkAgain = false, background = false, last = 0, foreground = 0;
     async function check(wake = false) {
       const fresh = verified.current !== scope || wake;
-      if (controller.signal.aborted || document.visibilityState === "hidden") return;
+      if (controller.signal.aborted || isBackground()) return;
       if (running) { checkAgain ||= wake; return; }
       if (!fresh && Date.now() - last < 60000) return;
       const turn = foreground;
@@ -121,18 +123,24 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
     void check(); const timer = setInterval(() => void check(), 60000);
     const online = () => { void check(true); };
     const visibilityChanged = () => {
-      if (document.visibilityState === "hidden") {
+      const next = isBackground();
+      if (next === background) return;
+      background = next;
+      if (background) {
         foreground++;
         verified.current = null;
         setVerifiedOwner(null);
       } else void check(true);
     };
+    visibilityChanged();
     window.addEventListener("online", online);
+    window.addEventListener("resell:activity-visibility", visibilityChanged);
     document.addEventListener("visibilitychange", visibilityChanged);
     return () => {
       controller.abort();
       clearInterval(timer);
       window.removeEventListener("online", online);
+      window.removeEventListener("resell:activity-visibility", visibilityChanged);
       document.removeEventListener("visibilitychange", visibilityChanged);
     };
   }, [owner, enabled, revision, refreshInventory, drafts.flatMap(d => d.publications?.map(p => p.advertId) || []).join(",")]);
