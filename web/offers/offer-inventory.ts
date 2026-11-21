@@ -46,10 +46,14 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
   useEffect(() => {
     if (!owner || !enabled || !inNativeApp()) return;
     const scope = owner;
-    const controller = new AbortController(); let running = false, last = 0;
+    const controller = new AbortController();
+    let running = false, checkAgain = false, last = 0, foreground = 0;
     async function check(wake = false) {
       const fresh = verified.current !== scope || wake;
-      if (running || controller.signal.aborted || document.visibilityState === "hidden" || (!fresh && Date.now() - last < 60000)) return;
+      if (controller.signal.aborted || document.visibilityState === "hidden") return;
+      if (running) { checkAgain ||= wake; return; }
+      if (!fresh && Date.now() - last < 60000) return;
+      const turn = foreground;
       running = true; last = Date.now();
       try {
         const base = (import.meta as any).env.VITE_API_BASE_URL || "";
@@ -99,22 +103,38 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       } catch (e) { if (!controller.signal.aborted) setMonitorError((e as Error).message); }
       finally {
         try {
-          if (!controller.signal.aborted && verified.current !== scope) {
+          if (!controller.signal.aborted && turn === foreground && verified.current !== scope) {
             await refreshInventory();
-            if (!controller.signal.aborted) {
+            if (!controller.signal.aborted && turn === foreground) {
               verified.current = scope;
               setVerifiedOwner(scope);
             }
           }
         } catch (e) {
           if (!controller.signal.aborted) setMonitorError((e as Error).message);
-        } finally { running = false; }
+        } finally {
+          running = false;
+          if (checkAgain) { checkAgain = false; void check(true); }
+        }
       }
     }
     void check(); const timer = setInterval(() => void check(), 60000);
-    const visible = () => { void check(true); };
-    window.addEventListener("online", visible); document.addEventListener("visibilitychange", visible);
-    return () => { controller.abort(); clearInterval(timer); window.removeEventListener("online", visible); document.removeEventListener("visibilitychange", visible); };
+    const online = () => { void check(true); };
+    const visibilityChanged = () => {
+      if (document.visibilityState === "hidden") {
+        foreground++;
+        verified.current = null;
+        setVerifiedOwner(null);
+      } else void check(true);
+    };
+    window.addEventListener("online", online);
+    document.addEventListener("visibilitychange", visibilityChanged);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+      window.removeEventListener("online", online);
+      document.removeEventListener("visibilitychange", visibilityChanged);
+    };
   }, [owner, enabled, revision, refreshInventory, drafts.flatMap(d => d.publications?.map(p => p.advertId) || []).join(",")]);
   const view = useMemo(() => {
     const byAdvert = new Map(devices.map(d => [identity(d.listingUrl || ""), d]));
