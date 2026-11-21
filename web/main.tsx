@@ -521,12 +521,12 @@ function App() {
           }
           inert={mobileWorkspace && page !== "inventory"}
         >
+          <MissingInventorySales key={scope} scope={scope} drafts={offerInventory.drafts} devices={devices} external={offerInventory.external} verifying={offerInventory.verifying} canPrompt={page === "inventory" && !overlayTab && !deleteTarget} onSaved={refreshInventory} />
           {offerInventory.verifying ? (
             <div className="app-page-loading" role="status" aria-label="Checking 999.md offers">
               <LoaderCircle className="spinning" />
             </div>
           ) : <>
-          <MissingInventorySales key={scope} scope={scope} drafts={offerInventory.drafts} devices={devices} external={offerInventory.external} canPrompt={page === "inventory" && !overlayTab && !deleteTarget} onSaved={refreshInventory} />
           <InventoryGrid
             retainPaint={mobileWorkspace}
             devices={visible}

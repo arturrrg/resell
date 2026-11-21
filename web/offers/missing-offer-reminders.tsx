@@ -38,15 +38,17 @@ export function MissingOfferReminders({ drafts, devices, onConfirm, excludedDraf
   })}</div>;
 }
 
-export function MissingInventorySales({ scope, drafts, devices, external, canPrompt, onSaved }: {
+export function MissingInventorySales({ scope, drafts, devices, external, verifying, canPrompt, onSaved }: {
   scope: string;
   drafts: OfferDraft[];
   devices: Device[];
   external: boolean;
+  verifying: boolean;
   canPrompt: boolean;
   onSaved: () => Promise<void>;
 }) {
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
+  if (verifying) return null;
   const reminds = [
     ...drafts.flatMap(draft => {
       const missing = missingPublications(draft, devices);
