@@ -665,8 +665,11 @@
 .nav-person-cutout{fill:#29292e;stroke:#29292e;}
 
 .nav-pencil-fill{stroke:#29292e;stroke-width:1.3;paint-order:stroke fill;}
-html[data-keyboard-visible] .resell-app:has(input[aria-label="Search inventory"]:focus) .app-tabbar {
-  /* The keyboard covers bottom navigation during search. */
+html[data-keyboard-visible] .resell-app:is(
+  :has(input[aria-label="Search inventory"]:focus),
+  [data-page="offers"]:has(.missing-offer-form:not([hidden]) .missing-offer-pnl)
+) .app-tabbar {
+  /* Keep the tabs behind the keyboard when it resizes the window. */
   visibility: hidden;
   pointer-events: none;
 }

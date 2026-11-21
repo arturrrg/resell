@@ -736,6 +736,9 @@ footer svg {
   gap: 20px;
   padding: 14px 18px 14px 24px;
 }
+.media-dialog .viewer-header {
+  border-bottom: 0;
+}
 .viewer-header > span {
   font-size: 14px;
   font-weight: 500;
