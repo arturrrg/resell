@@ -585,7 +585,14 @@ body .description,body .characteristics-list { overscroll-behavior:none; }
  .workspace-pager::-webkit-scrollbar{display:none;}
  .native-workspace>.workspace-pager.is-dragging{scroll-snap-type:none;}
  .native-workspace .workspace-page{flex:0 0 100%;width:100%;height:100%;min-width:0;overflow-y:auto;overflow-x:hidden;scroll-snap-align:start;scroll-snap-stop:always;overscroll-behavior:none;padding:5px 18px calc(105px + env(safe-area-inset-bottom,0px));}
- .native-workspace .inventory-page{padding-top:calc(74px + env(safe-area-inset-top,0px));}
+ .native-workspace .inventory-page {
+   height: calc(100% - 78px - env(safe-area-inset-bottom, 0px));
+   padding-top: calc(74px + env(safe-area-inset-top, 0px));
+   padding-bottom: 12px;
+ }
+ .native-workspace .inventory-page .media-viewport {
+   aspect-ratio: 21 / 10;
+ }
  main.native-workspace>.floating-nav,main.native-workspace>.floating-nav[data-floating="true"]{display:grid !important;position:fixed;left:0;right:0;top:calc(18px + env(safe-area-inset-top,0px));width:min(352px,calc(100% - 44px));height:44px;min-height:44px;margin:0 auto !important;padding:4px 6px !important;transform:none;pointer-events:none;z-index:90;}
  main.native-workspace>.floating-nav>.wordmark{display:block !important;}
  main.native-workspace>.floating-nav>.nav-import,main.native-workspace>.floating-nav>.search-field{display:flex !important;}
