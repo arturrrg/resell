@@ -3,7 +3,7 @@ import {
   sourceRetryDelay,
   SOURCE_REQUEST_GAP,
 } from "../shared/refresh";
-import { profileAbsences } from "./offers/publication-presence";
+import { profileAbsences, publicationIsVisible } from "./offers/publication-presence";
 export const INVENTORY_CHANGED = "resell-inventory-changed";
 let broadcast: BroadcastChannel | undefined;
 function changesChannel() {
@@ -356,6 +356,7 @@ export async function saveSaleDetails(
   id: string,
   saleStatus: "in_progress" | "sold",
   expectedProfit?: number,
+  requireMissing = false,
 ) {
   if (
     !["in_progress", "sold"].includes(saleStatus) ||
@@ -363,23 +364,30 @@ export async function saveSaleDetails(
       (!Number.isFinite(expectedProfit) || expectedProfit < 0))
   )
     throw Error("Enter a valid profit amount.");
+  let missingChanged = false;
   await transaction("readwrite", (store) => {
     const request = store.get(id);
     request.onsuccess = () => {
-      if (!request.result) return;
+      const device = request.result as Device | undefined;
+      if (requireMissing && (!device?.monitoredAccount || device.saleStatus === "sold" || publicationIsVisible(device))) {
+        missingChanged = true;
+        return;
+      }
+      if (!device) return;
       store.put({
-        ...request.result,
+        ...device,
         saleStatus,
         expectedProfit,
         soldAt:
           saleStatus === "sold"
-            ? request.result.soldAt || new Date().toISOString()
+            ? device.soldAt || new Date().toISOString()
             : undefined,
         soldProfit: saleStatus === "sold" ? expectedProfit : undefined,
         updatedAt: new Date().toISOString(),
       });
     };
   });
+  if (missingChanged) throw Error("This offer is no longer awaiting confirmation.");
 }
 export async function commitImport(listing: any, refreshId?: string) {
   const db = await database();

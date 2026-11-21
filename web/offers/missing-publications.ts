@@ -7,6 +7,16 @@ export function missingPublications(draft: OfferDraft, devices: Device[]) {
   const sources = new Map(devices.map(d => [identity(d.listingUrl || ""), d]));
   return (draft.publications || []).filter(p => p.state === "published" && !publicationIsVisible(sources.get(p.advertId)));
 }
+
+export function missingMonitoredDevices(drafts: OfferDraft[], devices: Device[], external: boolean) {
+  if (!external) return [];
+  const recorded = new Set(drafts.flatMap(draft => (draft.publications || []).map(publication => publication.advertId)));
+  return devices.filter(device => {
+    const id = identity(device.listingUrl || "");
+    return id && !recorded.has(id) && device.monitoredAccount &&
+      device.saleStatus !== "sold" && !publicationIsVisible(device);
+  });
+}
 export function parsePnl(value: string) {
   if (!/^\d+(?:[.,]\d{1,2})?$/.test(value.trim())) throw Error("Enter an amount with up to two decimal places.");
   const amount = Number(value.trim().replace(",", "."));

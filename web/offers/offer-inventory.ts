@@ -7,9 +7,11 @@ import { reconcileOfferDrafts } from "./draft-view";
 import { inNativeApp, marketplaceProfile } from "./native";
 import { includeExternalOffers, watchMonitorSettings } from "./monitor-settings";
 import { confirmedUnavailableAdverts, publicationIsVisible } from "./publication-presence";
-export function useOfferInventory(owner: string | null, devices: Device[], enabled: boolean) {
+export function useOfferInventory(owner: string | null, devices: Device[], enabled: boolean, refreshInventory: () => Promise<void>) {
   const [drafts, setDrafts] = useState<OfferDraft[]>([]), [external, setExternal] = useState(false);
   const [monitorError, setMonitorError] = useState("");
+  const [verifiedOwner, setVerifiedOwner] = useState<string | null>(null);
+  const verified = useRef<string | null>(null);
   const [revision, setRevision] = useState(0);
   const live = useRef({ drafts, external, devices }); live.current = { drafts, external, devices };
   const objectUrls = useRef(new Map<Blob, string>());
@@ -35,30 +37,37 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
       else load();
     });
     const settings = () => { setExternal(includeExternalOffers(owner)); setRevision(v => v + 1); };
-    settings(); const stopSettings = watchMonitorSettings(owner, settings);
+    setExternal(includeExternalOffers(owner));
+    const stopSettings = watchMonitorSettings(owner, settings);
     return () => { alive = false; stop(); stopSettings(); for (const url of objectUrls.current.values()) URL.revokeObjectURL(url); objectUrls.current.clear(); };
   }, [owner]);
   // The timer is intentionally independent of tab navigation. No remount, image
   // reset, or whole-inventory busy state is needed during an update.
   useEffect(() => {
     if (!owner || !enabled || !inNativeApp()) return;
+    const scope = owner;
     const controller = new AbortController(); let running = false, last = 0;
-    async function check() {
-      if (running || controller.signal.aborted || document.visibilityState === "hidden" || Date.now() - last < 60000) return;
+    async function check(wake = false) {
+      const fresh = verified.current !== scope || wake;
+      if (running || controller.signal.aborted || document.visibilityState === "hidden" || (!fresh && Date.now() - last < 60000)) return;
       running = true; last = Date.now();
       try {
         const base = (import.meta as any).env.VITE_API_BASE_URL || "";
         if (base && !base.startsWith("https://")) throw Error("Marketplace updates require HTTPS.");
-        const profile = await marketplaceProfile(owner!, true), { drafts, external, devices } = live.current;
+        const [profile, drafts] = await Promise.all([
+          marketplaceProfile(scope, !fresh),
+          fresh ? savedDrafts(scope, true) : live.current.drafts,
+        ]);
+        const external = includeExternalOffers(scope), { devices } = live.current;
         const prepared = new Set(drafts.flatMap(d => d.publications?.map(p => p.advertId) || []));
         const byAdvert = new Map(devices.map(d => [identity(d.listingUrl || ""), d]));
-        for (const account of profile.accounts) {
+        const checks = await Promise.allSettled(profile.accounts.map(async (account) => {
           const login = account.username || (!account.login.includes("@") ? account.login : "");
-          if (!login || (!external && !drafts.some(d => d.publications?.some(p => p.accountId === account.id)))) continue;
+          if (!login || (!external && !drafts.some(d => d.publications?.some(p => p.accountId === account.id)))) return;
           const publishedIds = drafts.flatMap(d => (d.publications || []).filter(p => p.accountId === account.id && p.state === "published").map(p => p.advertId));
           const seen = new Set<string>(); let complete = false, expectedTotal = -1, consistent = true;
           for (let skip = 0; skip <= 20000; skip += 50) {
-            const response = await fetch(base + "/api/profile-offers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ login, skip }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) });
+            const response = await fetch(base + "/api/profile-offers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ login, skip, fresh }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) });
             const value = await response.json();
             if (!response.ok || !value.ok || !Array.isArray(value.offers) || !Number.isSafeInteger(value.total)) throw Error(value.error || "Could not update public offers.");
             const offers = value.offers as ProfileOffer[];
@@ -79,20 +88,34 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
               if (missing.length)
                 unavailableIds = await confirmedUnavailableAdverts(missing, base, controller.signal);
             }
-            await mergeMonitoredOffers(owner!, login, external ? offers : offers.filter(ad => prepared.has(ad.advertId)), complete, [...seen], publishedIds, unavailableIds);
+            await mergeMonitoredOffers(scope, login, external ? offers : offers.filter(ad => prepared.has(ad.advertId)), complete, [...seen], publishedIds, unavailableIds);
             if (lastPage) break;
             if (controller.signal.aborted) return;
           }
-        }
+        }));
+        const failed = checks.find(result => result.status === "rejected");
+        if (failed) throw failed.reason;
         if (!controller.signal.aborted) setMonitorError("");
       } catch (e) { if (!controller.signal.aborted) setMonitorError((e as Error).message); }
-      finally { running = false; }
+      finally {
+        try {
+          if (!controller.signal.aborted && verified.current !== scope) {
+            await refreshInventory();
+            if (!controller.signal.aborted) {
+              verified.current = scope;
+              setVerifiedOwner(scope);
+            }
+          }
+        } catch (e) {
+          if (!controller.signal.aborted) setMonitorError((e as Error).message);
+        } finally { running = false; }
+      }
     }
     void check(); const timer = setInterval(() => void check(), 60000);
-    const visible = () => { void check(); };
-    window.addEventListener("focus", visible); window.addEventListener("online", visible); document.addEventListener("visibilitychange", visible);
-    return () => { controller.abort(); clearInterval(timer); window.removeEventListener("focus", visible); window.removeEventListener("online", visible); document.removeEventListener("visibilitychange", visible); };
-  }, [owner, enabled, revision, drafts.flatMap(d => d.publications?.map(p => p.advertId) || []).join(",")]);
+    const visible = () => { void check(true); };
+    window.addEventListener("online", visible); document.addEventListener("visibilitychange", visible);
+    return () => { controller.abort(); clearInterval(timer); window.removeEventListener("online", visible); document.removeEventListener("visibilitychange", visible); };
+  }, [owner, enabled, revision, refreshInventory, drafts.flatMap(d => d.publications?.map(p => p.advertId) || []).join(",")]);
   const view = useMemo(() => {
     const byAdvert = new Map(devices.map(d => [identity(d.listingUrl || ""), d]));
     const inventory = new Map<string, Device>(), soldAdverts = new Set<string>();
@@ -118,5 +141,6 @@ export function useOfferInventory(owner: string | null, devices: Device[], enabl
     await changeDraftState(device.offerDraftId, owner, d => { const { sale, ...rest } = d; return rest; });
     await reload();
   }, [owner, reload]);
-  return { ...view, undoSale, monitorError };
+  const verifying = !!owner && enabled && inNativeApp() && verifiedOwner !== owner;
+  return { ...view, drafts, external, verifying, undoSale, monitorError };
 }

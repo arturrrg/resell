@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { LISTING_UNAVAILABLE } from "../shared/refresh";
+import { newOffer } from "../shared/offer-draft";
+import { missingMonitoredDevices, missingPublications } from "../web/offers/missing-publications";
 import { confirmedUnavailableAdverts, profileAbsences, publicationIsVisible } from "../web/offers/publication-presence";
 
 test("a cached profile miss cannot hide a published advert after restart", () => {
@@ -41,4 +43,23 @@ test("a first profile miss can be confirmed by a typed importer 404", async () =
   const first = profileAbsences(["105967410", "234567", "345678"], new Set(), [], 1_000, unavailable);
   assert.deepEqual([...first.confirmed], ["105967410"]);
   assert.deepEqual(first.pending, [["234567", 1_000], ["345678", 1_000]]);
+});
+
+test("a disappeared connected-account offer gets one sale prompt", () => {
+  const device = {
+    id: "device",
+    listingUrl: "https://999.md/ro/105967410",
+    monitoredAccount: "seller",
+    monitorActive: false,
+  };
+  const draft = {
+    ...newOffer(),
+    publications: [{ advertId: "105967410", accountId: "account", login: "seller", state: "published" as const }],
+  };
+  assert.deepEqual(missingMonitoredDevices([], [device], true), [device]);
+  assert.deepEqual(missingMonitoredDevices([], [device], false), []);
+  assert.deepEqual(missingMonitoredDevices([], [{ ...device, monitorActive: true }], true), []);
+  assert.deepEqual(missingMonitoredDevices([], [{ ...device, saleStatus: "sold" }], true), []);
+  assert.deepEqual(missingMonitoredDevices([draft], [device], true), []);
+  assert.equal(missingPublications(draft, [device]).length, 1);
 });

@@ -21,7 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (limits.size >= 1000 && !limit) return res.status(429).json({ ok: false, error: "Updates are busy. Please retry shortly." });
     limits.set(ip, limit && limit.until > Date.now() ? { ...limit, count: limit.count + 1 } : { until: Date.now() + 60000, count: 1 });
     const key = login.toLowerCase() + ":" + skip, cached = cache.get(key);
-    if (cached && cached.expires > Date.now()) return res.json({ ok: true, ...cached.value });
+    if (req.body?.fresh !== true && cached && cached.expires > Date.now())
+      return res.json({ ok: true, ...cached.value });
     let work = pending.get(key);
     if (!work) {
       if (pending.size >= 16) return res.status(503).json({ ok: false, error: "Marketplace updates are busy. They will retry shortly." });

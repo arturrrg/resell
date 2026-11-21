@@ -378,6 +378,10 @@ Publishes on this account, then returns to Inventory.|Publică pe acest cont, ap
 Price by account|Preț pe cont|Цена для аккаунтов
 Price for {0}|Preț pentru {0}|Цена для {0}
 Offer no longer on 999.md|Oferta nu mai este pe 999.md|Объявления больше нет на 999.md
+Checking 999.md offers|Se verifică ofertele de pe 999.md|Проверка объявлений на 999.md
+If you sold this device, record the profit.|Dacă ai vândut dispozitivul, înregistrează profitul.|Если вы продали устройство, укажите прибыль.
+Record sale|Înregistrează vânzarea|Записать продажу
+This offer is no longer awaiting confirmation.|Oferta nu mai așteaptă confirmarea.|Это объявление больше не ожидает подтверждения.
 Your draft is still here. Record the result to close it.|Ciorna este încă aici. Înregistrează rezultatul pentru a o închide.|Черновик сохранён. Укажите результат, чтобы закрыть его.
 Other account copies may still be active.|Copiile de pe alte conturi pot fi încă active.|Копии в других аккаунтах могут быть активны.
 Close disappeared offer {0}|Închide oferta dispărută {0}|Закрыть исчезнувшее объявление {0}

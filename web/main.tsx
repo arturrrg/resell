@@ -40,6 +40,7 @@ import { Filters } from "./filter-bar";
 import { filterInventory, emptyFilters } from "./filters";
 import { DeviceCard } from "./device-card";
 import { useOfferInventory } from "./offers/offer-inventory";
+import { MissingInventorySales } from "./offers/missing-offer-reminders";
 import { DeleteDialog } from "./confirm-dialog";
 import { Account, AuthGate, hasAccount, needsPassword } from "./account";
 import { LanguagePicker } from "./language-picker";
@@ -243,7 +244,8 @@ function App() {
     !cloud.configured ||
     (cloud.ready && !!cloud.session?.user.is_anonymous && devices.length > 0) ||
     (cloud.ready && hasAccount(cloud) && !needsPassword(cloud));
-  const offerInventory = useOfferInventory(cloud.workspace || (!cloud.configured ? "local" : null), devices, accountReady);
+  const scope = cloud.workspace || "local";
+  const offerInventory = useOfferInventory(cloud.workspace || (!cloud.configured ? scope : null), devices, accountReady, refreshInventory);
   const readyRef = useRef(cloud.ready);
   readyRef.current = accountReady;
   useEffect(() => {
@@ -519,6 +521,12 @@ function App() {
           }
           inert={mobileWorkspace && page !== "inventory"}
         >
+          {offerInventory.verifying ? (
+            <div className="app-page-loading" role="status" aria-label="Checking 999.md offers">
+              <LoaderCircle className="spinning" />
+            </div>
+          ) : <>
+          <MissingInventorySales key={scope} scope={scope} drafts={offerInventory.drafts} devices={devices} external={offerInventory.external} canPrompt={page === "inventory" && !overlayTab && !deleteTarget} onSaved={refreshInventory} />
           <InventoryGrid
             retainPaint={mobileWorkspace}
             devices={visible}
@@ -547,6 +555,7 @@ function App() {
               onCreate={!offerInventory.inventory.length ? () => { setCreationDraft(newOffer()); navigate("offers"); } : undefined}
             />
           )}
+          </>}
         </div>
         {(offersVisited || mobileWorkspace) && (
           <div
